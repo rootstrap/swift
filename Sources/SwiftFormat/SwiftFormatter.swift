@@ -51,7 +51,11 @@ public final class SwiftFormatter {
     contentsOf url: URL, to outputStream: inout Output
   ) throws {
     guard FileManager.default.isReadableFile(atPath: url.path) else {
-      throw SwiftFormatError.fileNotFound
+      throw SwiftFormatError.fileNotReadable
+    }
+    var isDir: ObjCBool = false
+    if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
+      throw SwiftFormatError.isDirectory
     }
     let sourceFile = try SyntaxTreeParser.parse(url)
     try format(syntax: sourceFile, assumingFileURL: url, to: &outputStream)

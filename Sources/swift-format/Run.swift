@@ -30,7 +30,13 @@ func lintMain(configuration: Configuration, path: String) -> Int {
 
   do {
     try linter.lint(contentsOf: url)
-  } catch {
+  }
+  catch SwiftFormatError.fileNotReadable {
+    stderrStream.write("Unable to lint \(path): file is not readable or does not exist.\n")
+    stderrStream.flush()
+    return 1
+  }
+  catch {
     stderrStream.write("Unable to lint \(path): \(error)\n")
     stderrStream.flush()
     exit(1)
@@ -68,7 +74,13 @@ func formatMain(
       try formatter.format(contentsOf: url, to: &stdoutStream)
       stdoutStream.flush()
     }
-  } catch {
+  }
+  catch SwiftFormatError.fileNotReadable {
+    stderrStream.write("Unable to format \(path): file is not readable or does not exist.\n")
+    stderrStream.flush()
+    return 1
+  }
+  catch {
     stderrStream.write("Unable to format \(path): \(error)\n")
     stderrStream.flush()
     exit(1)
