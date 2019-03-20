@@ -33,6 +33,11 @@ struct CommandLineOptions {
   /// If specified, the current file is overwritten when formatting
   var inPlace: Bool = false
 
+  /// Whether or not to run the formatter/linter recursively.
+  ///
+  /// If set, we recursively run on all ".swift" files in any provided directories.
+  var recursive: Bool = false
+
   /// Advanced options that are useful for developing/debugging but otherwise not meant for general
   /// use.
   var debugOptions: DebugOptions = []
@@ -100,6 +105,15 @@ func processArguments(commandName: String, _ arguments: [String]) -> CommandLine
   )) {
     $0.inPlace = $1
   }
+  binder.bind(
+    option: parser.add(
+      option: "--recursive",
+      shortName: "-r",
+      kind: Bool.self,
+      usage: "Recursively run on '.swift' files in any provided directories."
+  )) {
+    $0.recursive = $1
+  }
 
   // Add advanced debug/developer options. These intentionally have no usage strings, which omits
   // them from the `--help` screen to avoid noise for the general user.
@@ -129,6 +143,22 @@ func processArguments(commandName: String, _ arguments: [String]) -> CommandLine
 
     if opts.inPlace && ToolMode.format != opts.mode {
       throw ArgumentParserError.unexpectedArgument("--in-place, -i")
+    }
+
+    if opts.recursive && !(ToolMode.format == opts.mode || ToolMode.lint == opts.mode) {
+      throw ArgumentParserError.unexpectedArgument("--recursive, -r")
+    }
+
+    if !opts.paths.isEmpty && !opts.recursive {
+      for path in opts.paths {
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue {
+          throw ArgumentParserError.invalidValue(
+            argument: "'\(path)'",
+            error: ArgumentConversionError.custom("for directories, use --recursive option")
+          )
+        }
+      }
     }
   } catch {
     stderrStream.write("error: \(error)\n\n")

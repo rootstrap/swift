@@ -11,5 +11,6 @@
 //===----------------------------------------------------------------------===//
 
 public enum SwiftFormatError: Error {
-  case fileNotFound
+  case fileNotReadable
+  case isDirectory
 }

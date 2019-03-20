@@ -23,7 +23,7 @@ fileprivate func main(_ arguments: [String]) -> Int32 {
   switch options.mode {
   case .format:
     var ret = 0
-    for path in options.paths {
+    for path in FileIterator(paths: options.paths) {
       let configuration = loadConfiguration(
         forSwiftFile: path, configFilePath: options.configurationPath)
       ret |= formatMain(
@@ -35,7 +35,7 @@ fileprivate func main(_ arguments: [String]) -> Int32 {
     return Int32(ret)
   case .lint:
     var ret = 0
-    for path in options.paths {
+    for path in FileIterator(paths: options.paths) {
       let configuration = loadConfiguration(
         forSwiftFile: path, configFilePath: options.configurationPath)
       ret |= lintMain(configuration: configuration, path: path)
