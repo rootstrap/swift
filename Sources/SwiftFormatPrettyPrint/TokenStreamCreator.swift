@@ -1574,7 +1574,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   private func extractLeadingTrivia(_ token: TokenSyntax) {
-    let isStartOfFile = token.previousToken == nil
+    var isStartOfFile = token.previousToken == nil
     let trivia = token.leadingTrivia
 
     for (index, piece) in trivia.enumerated() {
@@ -1583,6 +1583,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
         if index > 0 || isStartOfFile {
           appendToken(.comment(Comment(kind: .line, text: text), wasEndOfLine: false))
           appendToken(.newline)
+          isStartOfFile = false
         }
 
       case .blockComment(let text):
@@ -1592,17 +1593,21 @@ private final class TokenStreamCreator: SyntaxVisitor {
           // comment if the user places one here but the comment is otherwise adjacent to a text
           // token.
           appendToken(.break(.same, size: 0))
+          isStartOfFile = false
         }
 
       case .docLineComment(let text):
         appendToken(.comment(Comment(kind: .docLine, text: text), wasEndOfLine: false))
         appendToken(.newline)
+        isStartOfFile = false
 
       case .docBlockComment(let text):
         appendToken(.comment(Comment(kind: .docBlock, text: text), wasEndOfLine: false))
         appendToken(.newline)
+        isStartOfFile = false
 
       case .newlines(let count), .carriageReturns(let count), .carriageReturnLineFeeds(let count):
+        guard !isStartOfFile else { break }
         if config.respectsExistingLineBreaks && isDiscretionaryNewlineAllowed(before: token) {
           appendToken(.newlines(count, discretionary: true))
         }
