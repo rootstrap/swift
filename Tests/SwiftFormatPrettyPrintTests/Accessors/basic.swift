@@ -1,4 +1,4 @@
-//! config: {"respectsExistingNewLines": true}
+//! test: {"respectsExistingNewLines": true}
 struct MyStruct {
   var memberValue: Int
   var someValue: Int { get { return memberValue + 2 } set(newValue) { memberValue = newValue } }
@@ -66,5 +66,20 @@ struct MyStruct {
   var AnotherValue: Double {
     let out = 1.23
     return out
+  }
+}
+//! test: {"respectsExistingNewLines": true}
+struct MyStruct {
+  var memberValue: Int
+  var someValue: Int { @objc get { return memberValue + 2 } @objc(isEnabled) set(newValue) { memberValue = newValue } }
+}
+//!-----------------------------------------
+struct MyStruct {
+  var memberValue: Int
+  var someValue: Int {
+    @objc get { return memberValue + 2 }
+    @objc(isEnabled) set(newValue) {
+      memberValue = newValue
+    }
   }
 }

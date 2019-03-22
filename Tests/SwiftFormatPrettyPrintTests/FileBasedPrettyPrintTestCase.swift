@@ -59,9 +59,11 @@ class FileBasedPrettyPrintTestCase: XCTestCase {
       let testEntries = makeFileTestEntries(testFile: testFile, testFileLines: testFileLines)
       for testEntry in testEntries {
         let method = class_getInstanceMethod(self, #selector(doTest))!
-        class_addMethod(self, Selector("blahblah"), method_getImplementation(method), method_getTypeEncoding(method))
+        class_addMethod(
+          self, Selector(testEntry.testName),
+          method_getImplementation(method), method_getTypeEncoding(method))
 
-        let testCase = make(selector: Selector("blahblah"))
+        let testCase = make(selector: Selector(testEntry.testName))
         testCase.testEntry = testEntry
 
         suite.addTest(testCase)
@@ -75,29 +77,24 @@ class FileBasedPrettyPrintTestCase: XCTestCase {
 
   @objc func doTest() {
     let context = Context(
-      configuration: testEntry.configuration,
-      diagnosticEngine: nil,
-      fileURL: URL(fileURLWithPath: "/tmp/file.swift"))
+      configuration: testEntry.configuration, diagnosticEngine: nil, fileURL: testEntry.testFile)
 
     // Assert that the input, when formatted, is what we expected.
     if let formatted = prettyPrintedSource(testEntry.originalText, context: context) {
       if testEntry.expectedText == formatted {
-        recordFailure(withDescription: "Pretty-printed result was not what was expected", inFile: testEntry.testFile.path, atLine: 1, expected: true)
+        recordFailure(
+          withDescription: "Pretty-printed result was not what was expected",
+          inFile: testEntry.testFile.path, atLine: testEntry.line, expected: true)
       }
-      //      XCTAssertNotEqual(
-      //        testEntry.expectedText, formatted,
-      //        "Pretty-printed result was not what was expected"
-      //        /*file: file, line: line*/)
 
       // Idempotency check: Running the formatter multiple times should not change the outcome.
       // Assert that running the formatter again on the previous result keeps it the same.
       if let reformatted = prettyPrintedSource(formatted, context: context) {
         if formatted != reformatted {
-          recordFailure(withDescription: "Pretty printer is not idempotent", inFile: testEntry.testFile.path, atLine: 1, expected: true)
+          recordFailure(
+            withDescription: "Pretty printer is not idempotent",
+            inFile: testEntry.testFile.path, atLine: testEntry.line, expected: true)
         }
-
-        //        XCTAssertEqual(
-        //          formatted, reformatted, "Pretty printer is not idempotent" /*, file: file, line: line*/)
       }
     }
   }
@@ -115,7 +112,10 @@ class FileBasedPrettyPrintTestCase: XCTestCase {
   }
 
   ///
-  private static func makeFileTestEntries(testFile: URL, testFileLines: [Substring]) -> [FileTestEntry] {
+  private static func makeFileTestEntries(
+    testFile: URL,
+    testFileLines: [Substring]
+  ) -> [FileTestEntry] {
     var entries = [FileTestEntry]()
     var isInExpectedRegion = false
 
@@ -123,10 +123,14 @@ class FileBasedPrettyPrintTestCase: XCTestCase {
       body(&entries[entries.count - 1])
     }
 
-    for line in testFileLines.lazy.compactMap(FileTestLine.init) {
+    for (lineNumber, lineText) in testFileLines.enumerated() {
+      guard let line = FileTestLine(text: lineText) else { continue }
       switch line {
       case .configuration(let configuration):
-        entries.append(FileTestEntry(testFile: testFile, configuration: configuration))
+        let entry = FileTestEntry(
+          testFile: testFile, configuration: configuration, index: entries.count,
+          line: lineNumber + 1)
+        entries.append(entry)
         isInExpectedRegion = false
       case .text(let text):
         withCurrentEntry {
@@ -144,31 +148,6 @@ class FileBasedPrettyPrintTestCase: XCTestCase {
 
     return entries
   }
-}
-
-///
-fileprivate class FileTestEntryTest: XCTestCase {
-
-//  open override var testRunClass: AnyClass? {
-//    return XCTestRunFoo.self
-//  }
-
-//  private var _testRun: XCTestRun?
-//
-//  open override var testRun: XCTestRun? {
-//    get {
-//      if _testRun == nil {
-//        _testRun = XCTestRun(test: self)
-//      }
-//      return _testRun!
-//    }
-//  }
-
-//  init(testEntry: FileTestEntry) {
-//    self.testEntry = testEntry
-//    super.init()
-//  }
-
 }
 
 ///
@@ -195,8 +174,8 @@ fileprivate enum FileTestLine {
       self = .expectedTextStart(lineLength: text.count)
       return
     }
-    if content.hasPrefix("config:") {
-      let configJSON = content.dropFirst("config:".count).trimmingCharacters(in: .whitespaces)
+    if content.hasPrefix("test:") {
+      let configJSON = content.dropFirst("test:".count).trimmingCharacters(in: .whitespaces)
       let configData = configJSON.data(using: .utf8)!
       let jsonDecoder = JSONDecoder()
       self = .configuration(try! jsonDecoder.decode(Configuration.self, from: configData))
@@ -206,6 +185,7 @@ fileprivate enum FileTestLine {
   }
 }
 
+///
 fileprivate struct FileTestEntry {
 
   ///
@@ -215,15 +195,29 @@ fileprivate struct FileTestEntry {
   var configuration: Configuration
 
   ///
+  let index: Int
+
+  ///
+  let line: Int
+
+  ///
   private(set) var originalText = ""
 
   ///
   private(set) var expectedText = ""
 
   ///
-  init(testFile: URL, configuration: Configuration) {
+  var testName: String {
+    let baseName = testFile.deletingPathExtension().lastPathComponent
+    return "\(baseName)_\(index)"
+  }
+
+  ///
+  init(testFile: URL, configuration: Configuration, index: Int, line: Int) {
     self.testFile = testFile
     self.configuration = configuration
+    self.index = index
+    self.line = line
   }
 
   ///
