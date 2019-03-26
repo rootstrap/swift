@@ -292,12 +292,31 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
     before(node.result.firstToken, tokens: .break)
 
-    // The body of a subscript is an `AccessorBlockSyntax`; since we do the arrangement of the
-    // braces and contents in the override for that node, we don't need to do them here.
+    if let accessorOrCodeBlock = node.accessor {
+      arrangeAccessorOrCodeBlock(accessorOrCodeBlock)
+    }
 
     after(node.lastToken, tokens: .close)
 
     return .visitChildren
+  }
+
+  /// Applies formatting tokens to the given syntax node, assuming that it is either an
+  /// `AccessorBlockSyntax` or a `CodeBlockSyntax`.
+  ///
+  /// - Parameter node: The syntax node to arrange.
+  private func arrangeAccessorOrCodeBlock(_ node: Syntax) {
+    switch node {
+    case let accessorBlock as AccessorBlockSyntax:
+      arrangeBracesAndContents(of: accessorBlock)
+    case let codeBlock as CodeBlockSyntax:
+      arrangeBracesAndContents(of: codeBlock, contentsKeyPath: \.statements)
+    default:
+      preconditionFailure("""
+        This should be unreachable; we expected an AccessorBlockSyntax or a CodeBlockSyntax, but \
+        found: \(type(of: node))
+        """)
+    }
   }
 
   /// Applies formatting tokens to the tokens in the given function or function-like declaration
@@ -323,11 +342,6 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   // MARK: - Property and subscript accessor block nodes
-
-  override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
-    arrangeBracesAndContents(of: node)
-    return .visitChildren
-  }
 
   override func visit(_ node: AccessorListSyntax) -> SyntaxVisitorContinueKind {
     for child in node.dropLast() {
@@ -808,9 +822,6 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-    if node.parent is PatternBindingSyntax || node.parent is SubscriptDeclSyntax {
-      arrangeBracesAndContents(of: node, contentsKeyPath: \.statements)
-    }
     return .visitChildren
   }
 
@@ -1078,6 +1089,9 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
+    if let accessorOrCodeBlock = node.accessor {
+      arrangeAccessorOrCodeBlock(accessorOrCodeBlock)
+    }
     return .visitChildren
   }
 
