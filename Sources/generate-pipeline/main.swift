@@ -81,7 +81,7 @@ for baseName in rulesEnumerator {
       continue
     }
     for member in classDecl.members.members {
-      guard let function = member as? FunctionDeclSyntax,
+      guard let function = member.decl as? FunctionDeclSyntax,
             let modifiers = function.modifiers else {
         continue
       }

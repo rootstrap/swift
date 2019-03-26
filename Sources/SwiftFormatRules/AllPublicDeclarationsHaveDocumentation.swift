@@ -20,42 +20,51 @@ import SwiftSyntax
 ///
 /// - SeeAlso: https://google.github.io/swift#where-to-document
 public final class AllPublicDeclarationsHaveDocumentation: SyntaxLintRule {
-  override public func visit(_ node: FunctionDeclSyntax) {
+  override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: node.fullDeclName, modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: InitializerDeclSyntax) {
+  override public func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: "init", modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: DeinitializerDeclSyntax) {
+  override public func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: "deinit", modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: SubscriptDeclSyntax) {
+  override public func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: "subscript", modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: ClassDeclSyntax) {
+  override public func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: node.identifier.text, modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: VariableDeclSyntax) {
-    guard node.bindings.count == 1 else { return }
+  override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    guard node.bindings.count == 1 else { return .skipChildren }
     let mainBinding = node.bindings[0]
     diagnoseMissingDocComment(node, name: "\(mainBinding.pattern)", modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: StructDeclSyntax) {
+  override public func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: node.identifier.text, modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: ProtocolDeclSyntax) {
+  override public func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: node.identifier.text, modifiers: node.modifiers)
+    return .skipChildren
   }
 
-  override public func visit(_ node: TypealiasDeclSyntax) {
+  override public func visit(_ node: TypealiasDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseMissingDocComment(node, name: node.identifier.text, modifiers: node.modifiers)
+    return .skipChildren
   }
 
   func diagnoseMissingDocComment(

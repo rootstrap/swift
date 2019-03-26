@@ -71,7 +71,7 @@ public final class SwiftLinter {
     let pipeline = LintPipeline(context: context)
     populate(pipeline)
 
-    pipeline.visit(syntax as Syntax)
+    syntax.walk(pipeline)
 
     // Perform whitespace linting by comparing the input source text with the output of the
     // pretty-printer.

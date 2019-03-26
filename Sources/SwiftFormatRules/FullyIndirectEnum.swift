@@ -37,8 +37,8 @@ public final class FullyIndirectEnum: SyntaxFormatRule {
     diagnose(.moveIndirectKeywordToEnumDecl(name: node.identifier.text), on: node.identifier)
 
     // Removes 'indirect' keyword from cases, reformats
-    let newMembers = enumMembers.map { (member: DeclSyntax) -> DeclSyntax in
-      guard let caseMember = member as? EnumCaseDeclSyntax,
+    let newMembers = enumMembers.map { (member: MemberDeclListItemSyntax) -> MemberDeclListItemSyntax in
+      guard let caseMember = member.decl as? EnumCaseDeclSyntax,
             let modifiers = caseMember.modifiers,
             modifiers.has(modifier: "indirect"),
             let firstModifier = modifiers.first
@@ -49,7 +49,7 @@ public final class FullyIndirectEnum: SyntaxFormatRule {
       let newCase = caseMember.withModifiers(modifiers.remove(name: "indirect"))
       let formattedCase = formatCase(
         unformattedCase: newCase, leadingTrivia: firstModifier.leadingTrivia)
-      return formattedCase
+      return member.withDecl(formattedCase)
     }
 
     // If the `indirect` keyword being added would be the first token in the decl, we need to move
@@ -70,20 +70,20 @@ public final class FullyIndirectEnum: SyntaxFormatRule {
 
     let newModifier = SyntaxFactory.makeDeclModifier(
       name: SyntaxFactory.makeIdentifier(
-        "indirect", leadingTrivia: leadingTrivia, trailingTrivia: .spaces(1)),
-      detail: nil)
+        "indirect", leadingTrivia: leadingTrivia, trailingTrivia: .spaces(1)), detailLeftParen: nil,
+      detail: nil, detailRightParen: nil)
 
-    let newMemberBlock = node.members.withMembers(SyntaxFactory.makeDeclList(newMembers))
+    let newMemberBlock = node.members.withMembers(SyntaxFactory.makeMemberDeclList(newMembers))
     return newEnumDecl.addModifier(newModifier).withMembers(newMemberBlock)
   }
 
   /// Returns a value indicating whether all enum cases in the given list are indirect.
   ///
   /// Note that if the enum has no cases, this returns false.
-  private func allCasesAreIndirect(in members: DeclListSyntax) -> Bool {
+  private func allCasesAreIndirect(in members: MemberDeclListSyntax) -> Bool {
     var hadCases = false
     for member in members {
-      if let caseMember = member as? EnumCaseDeclSyntax {
+      if let caseMember = member.decl as? EnumCaseDeclSyntax {
         hadCases = true
         guard let modifiers = caseMember.modifiers, modifiers.has(modifier: "indirect") else {
           return false

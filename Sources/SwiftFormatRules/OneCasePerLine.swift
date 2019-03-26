@@ -26,16 +26,16 @@ public final class OneCasePerLine: SyntaxFormatRule {
   
   public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let enumMembers = node.members.members
-    var newMembers: [DeclSyntax] = []
+    var newMembers: [MemberDeclListItemSyntax] = []
     var newIndx = 0
     
     for member in enumMembers {
       var numNewMembers = 0
-      if let caseMember = member as? EnumCaseDeclSyntax {
+      if let caseMember = member.decl as? EnumCaseDeclSyntax {
         var otherDecl: EnumCaseDeclSyntax? = caseMember
         // Add and skip single element case declarations
         guard caseMember.elements.count > 1 else {
-            newMembers.append(caseMember)
+            newMembers.append(member.withDecl(caseMember))
             newIndx += 1
             continue
         }
@@ -46,13 +46,13 @@ public final class OneCasePerLine: SyntaxFormatRule {
             let newRemovedDecl = createAssociateOrRawCaseDecl(fullDecl: caseMember,
                                                               removedElement: element)
             otherDecl = removeAssociateOrRawCaseDecl(fullDecl: otherDecl)
-            newMembers.append(newRemovedDecl)
+            newMembers.append(member.withDecl(newRemovedDecl))
             numNewMembers += 1
           }
         }
         // Add case declaration of remaining elements without associated/raw values, if any
         if let otherDecl = otherDecl {
-          newMembers.insert(otherDecl, at: newIndx)
+          newMembers.insert(member.withDecl(otherDecl), at: newIndx)
           newIndx += 1
         }
       // Add any member that isn't an enum case declaration
@@ -65,7 +65,7 @@ public final class OneCasePerLine: SyntaxFormatRule {
 
     let newMemberBlock = SyntaxFactory.makeMemberDeclBlock(
       leftBrace: node.members.leftBrace,
-      members: SyntaxFactory.makeDeclList(newMembers),
+      members: SyntaxFactory.makeMemberDeclList(newMembers),
       rightBrace: node.members.rightBrace)
     return node.withMembers(newMemberBlock)
   }

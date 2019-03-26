@@ -103,4 +103,51 @@ extension Syntax {
     }
     return nil
   }
+
+  /// Sequence of tokens that are part of this Syntax node.
+  public var tokens: TokenSequence {
+    return TokenSequence(self)
+  }
+}
+
+/// Sequence of tokens that are part of the provided Syntax node.
+public struct TokenSequence: Sequence {
+  public struct Iterator: IteratorProtocol {
+    var nextToken: TokenSyntax?
+    let endPosition: AbsolutePosition
+
+    init(_ token: TokenSyntax?, endPosition: AbsolutePosition) {
+      self.nextToken = token
+      self.endPosition = endPosition
+    }
+
+    public mutating func next() -> TokenSyntax? {
+      guard let token = self.nextToken else { return nil }
+      self.nextToken = token.nextToken
+      // Make sure we stop once we reach the end of the containing node.
+      if let nextTok = self.nextToken, nextTok.position >= self.endPosition {
+        self.nextToken = nil
+      }
+      return token
+    }
+  }
+
+  let node: Syntax
+
+  public init(_ node: Syntax) {
+    self.node = node
+  }
+
+  public func makeIterator() -> Iterator {
+    return Iterator(node.firstToken, endPosition: node.endPosition)
+  }
+}
+
+extension AbsolutePosition: Comparable {
+  public static func <(lhs: AbsolutePosition, rhs: AbsolutePosition) -> Bool {
+    return lhs.utf8Offset < rhs.utf8Offset
+  }
+  public static func ==(lhs: AbsolutePosition, rhs: AbsolutePosition) -> Bool {
+    return lhs.utf8Offset == rhs.utf8Offset
+  }
 }

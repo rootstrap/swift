@@ -23,12 +23,12 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#properties-2
 public final class UseSingleLinePropertyGetter: SyntaxFormatRule {
 
-  public override func visit(_ node: AccessorBlockSyntax) -> Syntax {
+  public override func visit(_ node: PatternBindingSyntax) -> Syntax {
     guard
-      let accessorList = node.accessorListOrStmtList as? AccessorListSyntax,
-      let acc = accessorList.first,
+      let accessorBlock = node.accessor as? AccessorBlockSyntax,
+      let acc = accessorBlock.accessors.first,
       let body = acc.body,
-      accessorList.count == 1,
+      accessorBlock.accessors.count == 1,
       acc.accessorKind.tokenKind == .contextualKeyword("get"),
       acc.attributes == nil,
       acc.modifier == nil
@@ -36,7 +36,8 @@ public final class UseSingleLinePropertyGetter: SyntaxFormatRule {
 
     diagnose(.removeExtraneousGetBlock, on: acc)
 
-    return node.withAccessorListOrStmtList(body.statements)
+    let newBlock = SyntaxFactory.makeCodeBlock(leftBrace: accessorBlock.leftBrace, statements: body.statements, rightBrace: accessorBlock.rightBrace)
+    return node.withAccessor(newBlock)
   }
 }
 

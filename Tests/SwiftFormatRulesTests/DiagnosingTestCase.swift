@@ -68,7 +68,7 @@ public class DiagnosingTestCase: XCTestCase {
     do {
       let syntax = try SyntaxTreeParser.parse(input)
       let linter = type.init(context: context!)
-      linter.visit(syntax)
+      syntax.walk(linter)
     } catch {
       XCTFail("\(error)", file: file, line: line)
     }

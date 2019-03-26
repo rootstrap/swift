@@ -29,17 +29,17 @@ import SwiftSyntax
 public final class NeverUseImplicitlyUnwrappedOptionals: SyntaxLintRule {
 
   // Checks if "XCTest" is an import statement
-  public override func visit(_ node: SourceFileSyntax) {
+  public override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
     setImportsXCTest(context: context, sourceFile: node)
-    super.visit(node)
+    return .visitChildren
   }
 
-  public override func visit(_ node: VariableDeclSyntax) {
-    guard !context.importsXCTest else { return }
+  public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    guard !context.importsXCTest else { return .skipChildren }
     // Ignores IBOutlet variables
     if let attributes = node.attributes {
       for attribute in attributes {
-        if attribute.attributeName.text == "IBOutlet" { return }
+        if attribute.attributeName.text == "IBOutlet" { return .skipChildren }
       }
     }
     // Finds type annotation for variable(s)
@@ -47,6 +47,7 @@ public final class NeverUseImplicitlyUnwrappedOptionals: SyntaxLintRule {
       guard let nodeTypeAnnotation = binding.typeAnnotation else { continue }
       diagnoseImplicitWrapViolation(nodeTypeAnnotation.type)
     }
+    return .skipChildren
   }
 
   func diagnoseImplicitWrapViolation(_ type: TypeSyntax) {

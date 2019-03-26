@@ -79,8 +79,8 @@ public final class UseEarlyExits: SyntaxFormatRule {
           body: elseBody)
 
         return [
-          SyntaxFactory.makeCodeBlockItem(item: guardStatement, semicolon: nil),
-          SyntaxFactory.makeCodeBlockItem(item: trueBlock, semicolon: nil),
+          SyntaxFactory.makeCodeBlockItem(item: guardStatement, semicolon: nil, errorTokens: nil),
+          SyntaxFactory.makeCodeBlockItem(item: trueBlock, semicolon: nil, errorTokens: nil),
         ]
       })
   }

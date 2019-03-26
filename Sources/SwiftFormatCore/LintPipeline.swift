@@ -14,6 +14,11 @@ import SwiftSyntax
 
 /// Manages a registry of lint rules to apply to specific kinds of nodes.
 public final class LintPipeline: SyntaxVisitor, Pipeline {
+  private enum Pass {
+    case linter(SyntaxLintRule)
+    case formatter(SyntaxFormatRule)
+  }
+
   private let context: Context
 
   /// Creates a Pipeline with the provided Context and Mode.
@@ -27,7 +32,7 @@ public final class LintPipeline: SyntaxVisitor, Pipeline {
   private var fileRules = [FileRule]()
 
   /// A mapping between syntax types and closures that will perform linting operations over them.
-  private var passMap = [SyntaxType: [(Syntax) -> Void]]()
+  private var passMap = [SyntaxType: [Pass]]()
 
   /// Adds a file-based rule to be run before format rules.
   ///
@@ -46,7 +51,7 @@ public final class LintPipeline: SyntaxVisitor, Pipeline {
   public func addLinter(_ lintRule: SyntaxLintRule.Type, for syntaxTypes: Syntax.Type...) {
     for type in syntaxTypes {
       let rule = lintRule.init(context: context)
-      passMap[SyntaxType(type: type), default: []].append(rule.visit)
+      passMap[SyntaxType(type: type), default: []].append(.linter(rule))
     }
   }
 
@@ -59,9 +64,7 @@ public final class LintPipeline: SyntaxVisitor, Pipeline {
   public func addFormatter(_ formatRule: SyntaxFormatRule.Type, for syntaxTypes: Syntax.Type...) {
     for type in syntaxTypes {
       let rule = formatRule.init(context: context)
-      passMap[SyntaxType(type: type), default: []].append {
-        _ = rule.visit($0)
-      }
+      passMap[SyntaxType(type: type), default: []].append(.formatter(rule))
     }
   }
 
@@ -69,7 +72,12 @@ public final class LintPipeline: SyntaxVisitor, Pipeline {
     let syntaxType = SyntaxType(type: type(of: node))
     guard let passes = passMap[syntaxType] else { return }
     for pass in passes {
-      pass(node)
+      switch pass {
+      case .linter(let visitor):
+        node.walk(visitor)
+      case .formatter(let rewriter):
+        _ = rewriter.visit(node)
+      }
     }
   }
 }

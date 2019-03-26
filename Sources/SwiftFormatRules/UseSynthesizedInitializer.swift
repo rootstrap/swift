@@ -24,11 +24,12 @@ import SwiftSyntax
 ///
 /// - SeeAlso: https://google.github.io/swift#initializers-2
 public final class UseSynthesizedInitializer: SyntaxLintRule {
-  public override func visit(_ node: StructDeclSyntax) {
+  public override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     var storedProperties: [VariableDeclSyntax] = []
     var initializers: [InitializerDeclSyntax] = []
 
-    for member in node.members.members {
+    for memberItem in node.members.members {
+      let member = memberItem.decl
       // Collect all stored variables into a list
       if let varDecl = member as? VariableDeclSyntax {
         guard let modifiers = varDecl.modifiers else {
@@ -54,6 +55,8 @@ public final class UseSynthesizedInitializer: SyntaxLintRule {
                                   initBody: initializer.body) else { continue }
       diagnose(.removeRedundantInitializer, on: initializer)
     }
+
+    return .skipChildren
   }
 
   // Compares initializer parameters to stored properties of the struct
@@ -99,8 +102,7 @@ public final class UseSynthesizedInitializer: SyntaxLintRule {
       for element in exp.elements {
         switch element {
         case let element as MemberAccessExprSyntax:
-          let base = element.base
-          guard base.description.trimmingCharacters(in: .whitespacesAndNewlines) == "self" else {
+          guard let base = element.base, base.description.trimmingCharacters(in: .whitespacesAndNewlines) == "self" else {
             return false
           }
           leftName = element.name.text

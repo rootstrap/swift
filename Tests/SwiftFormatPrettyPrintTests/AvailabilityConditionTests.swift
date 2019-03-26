@@ -1,8 +1,6 @@
-public class UnknownStmtTests: PrettyPrintTestCase {
+public class AvailabilityConditionTests: PrettyPrintTestCase {
 
-  /// As SwiftSyntax is updated and becomes more complete, these tests could break since the syntax
-  /// components might not be recognized as "unknown".
-  public func testUnknownStmt() {
+  public func testAvailabilityCondition() {
     let input =
       """
       if someCondition {
@@ -59,15 +57,15 @@ public class UnknownStmtTests: PrettyPrintTestCase {
       """
       if someCondition {
         if something, #available(OSX 10.12, *) {
-        let a = 123
-        let b = "abc"
+          let a = 123
+          let b = "abc"
         }
       }
 
       if someCondition {
         if something, #available(OSX 10.12, *) {
-        let a = 123
-        let b = "abc"
+          let a = 123
+          let b = "abc"
         }
       }
 
@@ -82,7 +80,8 @@ public class UnknownStmtTests: PrettyPrintTestCase {
 
       if #available(OSX 10.12, *) {
         // Do stuff
-      } else {
+      }
+      else {
         let a = 123
         let b = "abc"
       }
@@ -90,7 +89,8 @@ public class UnknownStmtTests: PrettyPrintTestCase {
       #if canImport(os)
         if #available(OSX 10.12, *) {
           // Do stuff
-        } else {
+        }
+        else {
           let a = 123
           let b = "abc"
         }
@@ -101,7 +101,8 @@ public class UnknownStmtTests: PrettyPrintTestCase {
         if #available(OSX 10.12, *) {
 
           let a = 123
-        } else {
+        }
+        else {
           // do stuff
         }
       }
@@ -111,7 +112,7 @@ public class UnknownStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  public func testUnknownStmtWithTrailingComment() {
+  public func testAvailabilityConditionWithTrailingComment() {
     let input =
       """
       struct MyStruct {
