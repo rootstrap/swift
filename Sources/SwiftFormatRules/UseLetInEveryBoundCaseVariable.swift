@@ -26,11 +26,12 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#pattern-matching
 public final class UseLetInEveryBoundCaseVariable: SyntaxLintRule {
 
-  public override func visit(_ node: SwitchCaseLabelSyntax) {
+  public override func visit(_ node: SwitchCaseLabelSyntax) -> SyntaxVisitorContinueKind {
     for item in node.caseItems {
       guard item.pattern is ValueBindingPatternSyntax else { continue }
       diagnose(.useLetInBoundCaseVariables, on: node)
     }
+    return .skipChildren
   }
 }
 

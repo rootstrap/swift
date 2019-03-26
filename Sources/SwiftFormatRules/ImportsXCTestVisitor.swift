@@ -22,17 +22,18 @@ private final class ImportsXCTestVisitor: SyntaxVisitor {
     self.context = context
   }
 
-  override func visit(_ node: SourceFileSyntax) {
+  override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
     for statement in node.statements {
       guard let importDecl = statement.item as? ImportDeclSyntax else { continue }
       for component in importDecl.path {
         guard component.name.text == "XCTest" else { continue }
         context.importsXCTest = true
         context.didSetImportsXCTest = true
-        return
+        return .skipChildren
       }
     }
     context.didSetImportsXCTest = true
+    return .skipChildren
   }
 }
 
@@ -47,5 +48,5 @@ private final class ImportsXCTestVisitor: SyntaxVisitor {
 ///   - sourceFile: The file to be visited.
 func setImportsXCTest(context: Context, sourceFile: SourceFileSyntax) {
   guard !context.didSetImportsXCTest else { return }
-  ImportsXCTestVisitor(context: context).visit(sourceFile)
+  sourceFile.walk(ImportsXCTestVisitor(context: context))
 }

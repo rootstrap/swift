@@ -54,22 +54,22 @@ public final class AmbiguousTrailingClosureOverload: SyntaxLintRule {
     diagnoseBadOverloads(staticOverloads)
   }
 
-  public override func visit(_ node: SourceFileSyntax) {
+  public override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
     let functions = node.statements.compactMap { $0.item as? FunctionDeclSyntax }
     discoverAndDiagnoseOverloads(functions)
-    super.visit(node)
+    return .visitChildren
   }
 
-  public override func visit(_ node: CodeBlockSyntax) {
+  public override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
     let functions = node.statements.compactMap { $0.item as? FunctionDeclSyntax }
     discoverAndDiagnoseOverloads(functions)
-    super.visit(node)
+    return .visitChildren
   }
 
-  public override func visit(_ decls: MemberDeclBlockSyntax) {
-    let functions = decls.members.compactMap { $0 as? FunctionDeclSyntax }
+  public override func visit(_ decls: MemberDeclBlockSyntax) -> SyntaxVisitorContinueKind {
+    let functions = decls.members.compactMap { $0.decl as? FunctionDeclSyntax }
     discoverAndDiagnoseOverloads(functions)
-    super.visit(decls)
+    return .visitChildren
   }
 }
 

@@ -28,48 +28,59 @@ public final class BeginDocumentationCommentWithOneLineSummary: SyntaxLintRule {
   /// This allows test runs on those platforms to test both implementations.
   static var forcesFallbackModeForTesting = false
 
-  override public func visit(_ node: FunctionDeclSyntax) {
+  override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: EnumDeclSyntax) {
+  override public func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: InitializerDeclSyntax) {
+  override public func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: DeinitializerDeclSyntax) {
+  override public func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: SubscriptDeclSyntax) {
+  override public func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: ClassDeclSyntax) {
+  override public func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: VariableDeclSyntax) {
+  override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: StructDeclSyntax) {
+  override public func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: ProtocolDeclSyntax) {
+  override public func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: TypealiasDeclSyntax) {
+  override public func visit(_ node: TypealiasDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
-  override public func visit(_ node: AssociatedtypeDeclSyntax) {
+  override public func visit(_ node: AssociatedtypeDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseDocComments(in: node)
+    return .skipChildren
   }
 
   /// Diagnose documentation comments that don't start with one sentence summary.

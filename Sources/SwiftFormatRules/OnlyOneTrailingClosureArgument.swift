@@ -22,10 +22,11 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#trailing-closures
 public final class OnlyOneTrailingClosureArgument: SyntaxLintRule {
 
-  public override func visit(_ node: FunctionCallExprSyntax) {
-    guard (node.argumentList.contains { $0.expression is ClosureExprSyntax }) else { return }
-    guard node.trailingClosure != nil else { return }
+  public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    guard (node.argumentList.contains { $0.expression is ClosureExprSyntax }) else { return .skipChildren }
+    guard node.trailingClosure != nil else { return .skipChildren }
     diagnose(.removeTrailingClosure, on: node)
+    return .skipChildren
   }
 }
 

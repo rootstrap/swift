@@ -22,21 +22,24 @@ import SwiftSyntax
 ///
 /// - SeeAlso: https://google.github.io/swift#identifiers
 public final class AlwaysUseLowerCamelCase: SyntaxLintRule {
-  public override func visit(_ node: VariableDeclSyntax) {
+  public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
     for binding in node.bindings {
       guard let pat = binding.pattern as? IdentifierPatternSyntax else {
         continue
       }
       diagnoseLowerCamelCaseViolations(pat.identifier)
     }
+    return .skipChildren
   }
 
-  public override func visit(_ node: FunctionDeclSyntax) {
+  public override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
     diagnoseLowerCamelCaseViolations(node.identifier)
+    return .skipChildren
   }
 
-  public override func visit(_ node: EnumCaseElementSyntax) {
+  public override func visit(_ node: EnumCaseElementSyntax) -> SyntaxVisitorContinueKind {
     diagnoseLowerCamelCaseViolations(node.identifier)
+    return .skipChildren
   }
 
   func diagnoseLowerCamelCaseViolations(_ identifier: TokenSyntax) {

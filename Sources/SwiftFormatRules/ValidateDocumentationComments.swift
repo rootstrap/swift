@@ -23,10 +23,10 @@ import SwiftSyntax
 ///
 /// - SeeAlso: https://google.github.io/swift#parameter-returns-and-throws-tags
 public final class ValidateDocumentationComments: SyntaxLintRule {
-  public override func visit(_ node: FunctionDeclSyntax) {
-    guard let declComment = node.docComment else { return }
-    guard let commentInfo = node.docCommentInfo else { return }
-    guard let params = commentInfo.parameters else { return }
+  public override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    guard let declComment = node.docComment else { return .skipChildren }
+    guard let commentInfo = node.docCommentInfo else { return .skipChildren }
+    guard let params = commentInfo.parameters else { return .skipChildren }
 
     // If a single sentence summary is the only documentation, parameter(s) and
     // returns tags may be ommitted.
@@ -34,7 +34,7 @@ public final class ValidateDocumentationComments: SyntaxLintRule {
       commentInfo.commentParagraphs!.isEmpty &&
       params.isEmpty &&
       commentInfo.returnsDescription == nil {
-      return
+      return .skipChildren
     }
 
     // Indicates if the documentation uses 'Parameters' as description of the
@@ -50,11 +50,11 @@ public final class ValidateDocumentationComments: SyntaxLintRule {
     // in order to validate the other conditions.
     if hasPluralDesc && funcParameters.count == 1 {
       diagnose(.useSingularParameter, on: node)
-      return
+      return .skipChildren
     }
     else if !hasPluralDesc && funcParameters.count > 1 {
       diagnose(.usePluralParameters, on: node)
-      return
+      return .skipChildren
     }
 
     // Ensures that the parameters of the documantation and the function signature
@@ -63,6 +63,8 @@ public final class ValidateDocumentationComments: SyntaxLintRule {
       !parametersAreEqual(params: params, funcParam: funcParameters) {
       diagnose(.parametersDontMatch(funcName: node.identifier.text), on: node)
     }
+
+    return .skipChildren
   }
 
   /// Ensures the function has a return documentation if it actually returns

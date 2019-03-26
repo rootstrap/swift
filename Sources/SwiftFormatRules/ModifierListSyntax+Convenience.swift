@@ -45,7 +45,7 @@ extension ModifierListSyntax {
   /// Returns a foramatted declaration modifier token with the given name.
   func createModifierToken(name: String) -> DeclModifierSyntax {
     let id = SyntaxFactory.makeIdentifier(name, trailingTrivia: .spaces(1))
-    let newModifier = SyntaxFactory.makeDeclModifier(name: id, detail: nil)
+    let newModifier = SyntaxFactory.makeDeclModifier(name: id, detailLeftParen: nil, detail: nil, detailRightParen: nil)
     return newModifier
   }
   

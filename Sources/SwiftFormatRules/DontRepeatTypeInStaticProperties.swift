@@ -25,30 +25,35 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#static-and-class-properties
 public final class DontRepeatTypeInStaticProperties: SyntaxLintRule {
 
-  public override func visit(_ node: ClassDeclSyntax) {
+  public override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
     determinePropertyNameViolations(members: node.members.members, nodeId: node.identifier.text)
+    return .skipChildren
   }
 
-  public override func visit(_ node: EnumDeclSyntax) {
+  public override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
     determinePropertyNameViolations(members: node.members.members, nodeId: node.identifier.text)
+    return .skipChildren
   }
 
-  public override func visit(_ node: ProtocolDeclSyntax) {
+  public override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
     determinePropertyNameViolations(members: node.members.members, nodeId: node.identifier.text)
+    return .skipChildren
   }
 
-  public override func visit(_ node: StructDeclSyntax) {
+  public override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     determinePropertyNameViolations(members: node.members.members, nodeId: node.identifier.text)
+    return .skipChildren
   }
 
-  public override func visit(_ node: ExtensionDeclSyntax) {
+  public override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
     determinePropertyNameViolations(members: node.members.members,
                                     nodeId: node.extendedType.description)
+    return .skipChildren
   }
   
-  func determinePropertyNameViolations(members: DeclListSyntax, nodeId: String) {
+  func determinePropertyNameViolations(members: MemberDeclListSyntax, nodeId: String) {
     for member in members {
-      guard let decl = member as? VariableDeclSyntax else { continue }
+      guard let decl = member.decl as? VariableDeclSyntax else { continue }
       guard let modifiers = decl.modifiers else { continue }
       guard modifiers.has(modifier: "static") || modifiers.has(modifier: "class") else { continue }
 

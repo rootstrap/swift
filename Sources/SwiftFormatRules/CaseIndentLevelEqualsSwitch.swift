@@ -22,10 +22,9 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#switch-statements
 public final class CaseIndentLevelEqualsSwitch: SyntaxLintRule {
 
-  public override func visit(_ node: SwitchStmtSyntax) {
+  public override func visit(_ node: SwitchStmtSyntax) -> SyntaxVisitorContinueKind {
     guard let switchIndentation = node.leadingTrivia?.numberOfSpaces else {
-      super.visit(node)
-      return
+      return .visitChildren
     }
 
     // Ensure the number of spaces in the indentation of each case is the same as that of the
@@ -39,7 +38,7 @@ public final class CaseIndentLevelEqualsSwitch: SyntaxLintRule {
       }
     }
 
-    super.visit(node)
+    return .visitChildren
   }
 }
 

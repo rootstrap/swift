@@ -21,24 +21,26 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#force-unwrapping-and-force-casts
 public final class NeverForceUnwrap: SyntaxLintRule {
 
-  public override func visit(_ node: SourceFileSyntax) {
+  public override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
     // Tracks whether "XCTest" is imported in the source file before processing the individual
     setImportsXCTest(context: context, sourceFile: node)
-    super.visit(node)
+    return .visitChildren
   }
 
-  public override func visit(_ node: ForcedValueExprSyntax) {
-    guard !context.importsXCTest else { return }
+  public override func visit(_ node: ForcedValueExprSyntax) -> SyntaxVisitorContinueKind {
+    guard !context.importsXCTest else { return .skipChildren }
     diagnose(.doNotForceUnwrap(name: node.expression.description), on: node)
+    return .skipChildren
   }
 
-  public override func visit(_ node: AsExprSyntax) {
+  public override func visit(_ node: AsExprSyntax) -> SyntaxVisitorContinueKind {
     // Only fire if we're not in a test file and if there is an exclamation mark following the `as`
     // keyword.
-    guard !context.importsXCTest else { return }
-    guard let questionOrExclamation = node.questionOrExclamationMark else { return }
-    guard questionOrExclamation.tokenKind == .exclamationMark else { return }
+    guard !context.importsXCTest else { return .skipChildren }
+    guard let questionOrExclamation = node.questionOrExclamationMark else { return .skipChildren }
+    guard questionOrExclamation.tokenKind == .exclamationMark else { return .skipChildren }
     diagnose(.doNotForceCast(name: node.typeName.description), on: node)
+    return .skipChildren
   }
 }
 

@@ -26,17 +26,18 @@ import SwiftSyntax
 /// - SeeAlso: https://google.github.io/swift#error-types
 public final class NeverUseForceTry: SyntaxLintRule {
 
-  public override func visit(_ node: SourceFileSyntax) {
+  public override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
     setImportsXCTest(context: context, sourceFile: node)
-    super.visit(node)
+    return .visitChildren
   }
 
-  public override func visit(_ node: TryExprSyntax) {
-    guard !context.importsXCTest else { return }
-    guard let mark = node.questionOrExclamationMark else { return }
+  public override func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
+    guard !context.importsXCTest else { return .skipChildren }
+    guard let mark = node.questionOrExclamationMark else { return .skipChildren }
     if mark.tokenKind == .exclamationMark {
       diagnose(.doNotForceTry, on: node.tryKeyword)
     }
+    return .skipChildren
   }
 }
 

@@ -27,33 +27,34 @@ fileprivate let knownIntTypes = Set(intSizes.map { "Int\($0)" } + intSizes.map {
 ///
 /// - SeeAlso: https://google.github.io/swift#numeric-and-string-literals
 public final class AvoidInitializersForLiterals: SyntaxLintRule {
-  public override func visit(_ node: FunctionCallExprSyntax) {
+  public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     // Ensure we're calling a known Integer initializer.
     guard let callee = node.calledExpression as? IdentifierExprSyntax else {
       // Ensure we properly visit the children of this node, in case we have other function calls
       // as parameters to this one.
-      return super.visit(node)
+      return .visitChildren
     }
 
     guard node.argumentList.count == 1 else {
-      return super.visit(node)
+      return .visitChildren
     }
 
     for arg in node.argumentList {
       if arg.label != nil {
-        return super.visit(node)
+        return .visitChildren
       }
     }
 
     let typeName = callee.identifier.text
 
     guard let _ = extractLiteral(node, typeName) else {
-      return super.visit(node)
+      return .visitChildren
     }
 
     diagnose(.avoidInitializerStyleCast(node.description), on: callee) {
       $0.highlight(callee.sourceRange(in: self.context.fileURL))
     }
+    return .skipChildren
   }
 }
 
