@@ -28,12 +28,17 @@ public class Configuration: Codable {
     case respectsExistingLineBreaks
     case blankLineBetweenMembers
     case surroundSymbolsWithBackticks
+    case rules
   }
 
   /// The version of this configuration.
   private let version: Int
 
   /// MARK: Common configuration
+
+  /// The dictionary containing the rule names that we wish to run on. A rule is not used if it is
+  /// marked as `false`, or if it is missing from the dictionary.
+  public var rules: [String: Bool] = [:]
 
   /// The maximum number of consecutive blank lines that may appear in a file.
   public var maximumBlankLines = 1
@@ -68,6 +73,7 @@ public class Configuration: Codable {
   /// Constructs a Configuration with all default values.
   public init() {
     self.version = highestSupportedConfigurationVersion
+    self.rules = RuleRegistry.rules
   }
 
   public required init(from decoder: Decoder) throws {
@@ -101,6 +107,7 @@ public class Configuration: Codable {
     self.blankLineBetweenMembers = try container.decodeIfPresent(
       BlankLineBetweenMembersConfiguration.self, forKey: .blankLineBetweenMembers)
       ?? BlankLineBetweenMembersConfiguration()
+    self.rules = try container.decodeIfPresent([String: Bool].self, forKey: .rules) ?? [:]
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -113,6 +120,7 @@ public class Configuration: Codable {
     try container.encode(indentation, forKey: .indentation)
     try container.encode(respectsExistingLineBreaks, forKey: .respectsExistingLineBreaks)
     try container.encode(blankLineBetweenMembers, forKey: .blankLineBetweenMembers)
+    try container.encode(rules, forKey: .rules)
   }
 }
 
