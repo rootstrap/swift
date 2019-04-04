@@ -117,7 +117,6 @@ func populate(_ pipeline: Pipeline) {
   pipeline.addFormatter(
     OneVariableDeclarationPerLine.self,
     for:
-      AccessorBlockSyntax.self,
       ClosureExprSyntax.self,
       CodeBlockSyntax.self,
       SourceFileSyntax.self
@@ -152,7 +151,7 @@ func populate(_ pipeline: Pipeline) {
   pipeline.addFormatter(
     UseSingleLinePropertyGetter.self,
     for:
-      AccessorBlockSyntax.self
+      PatternBindingSyntax.self
   )
 
   pipeline.addFormatter(
