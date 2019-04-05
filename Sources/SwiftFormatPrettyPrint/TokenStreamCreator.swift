@@ -1598,7 +1598,23 @@ private final class TokenStreamCreator: SyntaxVisitor {
     var isStartOfFile = token.previousToken == nil
     let trivia = token.leadingTrivia
 
+    // If we're at the end of the file, determine at which index to stop checking trivia pieces to
+    // prevent trailing newlines.
+    var cutoffIndex: Int? = nil
+    if token.tokenKind == TokenKind.eof {
+      cutoffIndex = 0
+      for (index, piece) in trivia.enumerated() {
+        switch piece {
+        case .newlines(_), .carriageReturns(_), .carriageReturnLineFeeds(_):
+          continue
+        default:
+          cutoffIndex = index + 1
+        }
+      }
+    }
+
     for (index, piece) in trivia.enumerated() {
+      if let cutoff = cutoffIndex, index == cutoff { break }
       switch piece {
       case .lineComment(let text):
         if index > 0 || isStartOfFile {
