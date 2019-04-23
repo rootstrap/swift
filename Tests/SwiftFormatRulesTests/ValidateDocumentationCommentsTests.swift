@@ -135,13 +135,4 @@ public class ValidateDocumentationCommentsTests: DiagnosingTestCase {
     XCTAssertNotDiagnosed(.removeReturnComment(funcName: "ommitedFunc"))
     XCTAssertNotDiagnosed(.parametersDontMatch(funcName: "ommitedFunc"))
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    ValidateDocumentationCommentsTests.testParameterDocumentation,
-    ValidateDocumentationCommentsTests.testParametersName,
-    ValidateDocumentationCommentsTests.tesReturnDocumentation,
-    ValidateDocumentationCommentsTests.testValidDocumentation
-    ]
-  #endif
 }

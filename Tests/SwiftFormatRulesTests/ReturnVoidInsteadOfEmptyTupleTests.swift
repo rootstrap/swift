@@ -21,10 +21,4 @@ public class ReturnVoidInsteadOfEmptyTupleTests: DiagnosingTestCase {
                 func z(d: Bool -> Void) {}
                 """)
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    ReturnVoidInsteadOfEmptyTupleTests.testEmptyTupleReturns,
-    ]
-  #endif
 }

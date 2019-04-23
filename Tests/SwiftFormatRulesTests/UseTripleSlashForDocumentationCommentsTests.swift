@@ -57,11 +57,4 @@ public class UseTripleSlashForDocumentationCommentsTests: DiagnosingTestCase {
                 public var test = 1
                 """)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    UseTripleSlashForDocumentationCommentsTests.testRemoveDocBlockComments,
-    UseTripleSlashForDocumentationCommentsTeststestRemoveDocBlockCommentsWithoutStars,
-    ]
-  #endif
 }

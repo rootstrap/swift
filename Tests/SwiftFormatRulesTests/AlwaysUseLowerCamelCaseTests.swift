@@ -24,11 +24,4 @@ public class AlwaysUseLowerCamelCaseTests: DiagnosingTestCase {
     XCTAssertNotDiagnosed(.variableNameMustBeLowerCamelCase("Foo"))
     XCTAssertDiagnosed(.variableNameMustBeLowerCamelCase("FooFunc"))
   }
-
-#if !os(macOS)
-  static let allTests = [
-    AlwaysUseLowerCamelCaseTests.testInvalidVariableCasing,
-  ]
-#endif
-
 }

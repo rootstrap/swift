@@ -127,12 +127,4 @@ public class OrderedImportsTests: DiagnosingTestCase {
                 @testable import MyModuleUnderTest
                 """)
   }
-  #if !os(macOS)
-  static let allTests = [
-    OrderedImportsTests.testInvalidImportsOrder,
-    OrderedImportsTests.testImportsOrderWithoutModuleType,
-    OrderedImportsTests.testImportsOrderWithDocComment,
-    OrderedImportsTests.testValidOrderedImport
-    ]
-  #endif
 }

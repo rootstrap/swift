@@ -174,26 +174,3 @@ final class MarkdownDocumentTest: XCTestCase {
     XCTAssertNotNil(rule)
   }
 }
-
-#if !os(macOS)
-extension MarkdownDocumentTest {
-
-  static let allTests = [
-    ("testInitByParsing_blockQuote", testInitByParsing_blockQuote),
-    ("testInitByParsing_codeBlock", testInitByParsing_codeBlock),
-    ("testInitByParsing_emphasis", testInitByParsing_emphasis),
-    ("testInitByParsing_HTMLBlock", testInitByParsing_HTMLBlock),
-    ("testInitByParsing_header", testInitByParsing_header),
-    ("testInitByParsing_horizontalRule", testInitByParsing_horizontalRule),
-    ("testInitByParsing_image", testInitByParsing_image),
-    ("testInitByParsing_inlineHTML", testInitByParsing_inlineHTML),
-    ("testInitByParsing_lineBreak", testInitByParsing_lineBreak),
-    ("testInitByParsing_link", testInitByParsing_link),
-    ("testInitByParsing_listBulleted", testInitByParsing_listBulleted),
-    ("testInitByParsing_listOrdered", testInitByParsing_listOrdered),
-    ("testInitByParsing_softBreak", testInitByParsing_softBreak),
-    ("testInitByParsing_strong", testInitByParsing_strong),
-    ("testInitByParsing_text", testInitByParsing_text),
-  ]
-}
-#endif

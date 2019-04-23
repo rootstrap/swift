@@ -58,11 +58,4 @@ public class UseWhereClausesInForLoopsTests: DiagnosingTestCase {
                 }
                 """)
   }
-
-#if !os(macOS)
-  static let allTests = [
-    UseWhereClausesInForLoopsTests.testMultipleVariableBindings,
-  ]
-#endif
-
 }

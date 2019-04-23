@@ -33,11 +33,4 @@ public class NeverUseImplicitlyUnwrappedOptionalsTests: DiagnosingTestCase {
     performLint(NeverUseImplicitlyUnwrappedOptionals.self, input: input)
     XCTAssertNotDiagnosed(.doNotUseImplicitUnwrapping(identifier: "String"))
   }
-
-#if !os(macOS)
-  static let allTests = [
-    NeverUseImplicitlyUnwrappedOptionalsTests.testInvalidVariableUnwrapping,
-  ]
-#endif
-
 }

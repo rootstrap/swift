@@ -65,12 +65,4 @@ public class CaseIndentLevelEqualsSwitchTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.adjustCaseIndentation(by: -11))
     XCTAssertDiagnosed(.adjustCaseIndentation(by: -1))
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    CaseIndentLevelEqualsSwitchTests.testInvalidCaseIndent,
-    CaseIndentLevelEqualsSwitchTests.testInvalidNestedCaseIndent,
-    CaseIndentLevelEqualsSwitchTests.testInvalidNestedSwitchIndent
-  ]
-  #endif
 }

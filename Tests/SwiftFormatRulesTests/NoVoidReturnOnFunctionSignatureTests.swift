@@ -35,11 +35,4 @@ public class NoVoidReturnOnFunctionSignatureTests: DiagnosingTestCase {
                 }
                 """)
   }
-
-#if !os(macOS)
-  static let allTests = [
-    NoVoidReturnOnFunctionSignatureTests.testVoidReturns,
-  ]
-#endif
-
 }

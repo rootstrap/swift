@@ -37,10 +37,4 @@ public class UseSingleLinePropertyGetterTests: DiagnosingTestCase {
                 }
                 """)
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    UseSingleLinePropertyGetterTests.testMultiLinePropertyGetter,
-  ]
-  #endif
 }

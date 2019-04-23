@@ -1,23 +1,14 @@
-#if os(Linux)
-import CommonMarkTests
-import SwiftFormatRulesTests
 import XCTest
 
-XCTMain([
-  ColonWhitespaceTests.allTests,
-  DoNotUseSemicolonsTests.allTests,
-  MultiLineTrailingCommasTests.allTests,
-  NoParensAroundConditionsTests.allTests,
-  UseEnumForNamespacingTests.allTests,
-  AvoidInitializersForLiteralsTests.allTests,
-  CollectionLiteralWhitespaceTests.allTests,
-  NoVoidReturnOnFunctionSignatureTests.allTests,
-  OneVariableDeclarationPerLineTests.allTests,
-  UseSingleLinePropertyGetterTests.allTests,
-  UseWhereClausesInForLoopsTests.allTests,
-  OpenBraceWhitespaceTests.allTests,
-  CloseBraceWhitespaceTests.allTests,
-  AlwaysUseLowerCamelCaseTests.allTests,
-  CommonMarkTests.XCTestManifests.allTests,
-].joined())
-#endif
+import CommonMarkTests
+import SwiftFormatPrettyPrintTests
+import SwiftFormatRulesTests
+import SwiftFormatWhitespaceLinterTests
+
+var tests = [XCTestCaseEntry]()
+tests += CommonMarkTests.__allTests()
+tests += SwiftFormatPrettyPrintTests.__allTests()
+tests += SwiftFormatRulesTests.__allTests()
+tests += SwiftFormatWhitespaceLinterTests.__allTests()
+
+XCTMain(tests)

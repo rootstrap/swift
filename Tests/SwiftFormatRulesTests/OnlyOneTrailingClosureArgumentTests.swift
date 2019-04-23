@@ -21,10 +21,4 @@ public class OnlyOneTrailingClosureArgumentTests: DiagnosingTestCase {
     XCTAssertNotDiagnosed(.removeTrailingClosure)
     XCTAssertNotDiagnosed(.removeTrailingClosure)
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    OnlyOneTrailingClosureArgumentTests.testInvalidTrailingClosureCall,
-    ]
-  #endif
 }

@@ -18,11 +18,4 @@ public class DoNotUseSemicolonsTests: DiagnosingTestCase {
                 print("3")
                 """)
   }
-
-#if !os(macOS)
-  static let allTests = [
-    DoNotUseSemicolonsTests.testSemicolonUse,
-  ]
-#endif
-
 }

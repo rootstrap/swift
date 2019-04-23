@@ -33,11 +33,4 @@ public class MultiLineTrailingCommasTests: DiagnosingTestCase {
                 ]
                 """)
   }
-
-#if !os(macOS)
-  static let allTests = [
-    MultiLineTrailingCommasTests.testMissedTrailingCommas,
-  ]
-#endif
-
 }

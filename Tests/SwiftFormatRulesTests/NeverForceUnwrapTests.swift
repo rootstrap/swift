@@ -35,12 +35,4 @@ public class NeverForceUnwrapTests: DiagnosingTestCase {
     performLint(NeverUseImplicitlyUnwrappedOptionals.self, input: input)
     XCTAssertNotDiagnosed(.doNotForceCast(name: "Int"))
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    NeverForceUnwrapTests.testUnsafeUnwrap,
-    ]
-  #endif
 }
-
-

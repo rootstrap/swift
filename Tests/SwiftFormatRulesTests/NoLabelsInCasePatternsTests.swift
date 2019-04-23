@@ -33,11 +33,4 @@ public class NoLabelsInCasePatternsTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.removeRedundantLabel(name: "right"))
     XCTAssertDiagnosed(.removeRedundantLabel(name: "element"))
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    NoLabelsInCasePatternsTests.testRedundantCaseLabels,
-    ]
-  #endif
 }
-

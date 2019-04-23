@@ -51,10 +51,4 @@ public class UseSynthesizedInitializerTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.removeRedundantInitializer)
     XCTAssertNotDiagnosed(.removeRedundantInitializer)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    UseSynthesizedInitializerTests.testRedundantCustomInitializer,
-    ]
-  #endif
 }

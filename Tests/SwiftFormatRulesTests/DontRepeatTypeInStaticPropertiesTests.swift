@@ -55,11 +55,4 @@ public class DontRepeatTypeInStaticPropertiesTests: DiagnosingTestCase {
     
     XCTAssertDiagnosed(.removeTypeFromName(name: "sharedSession", type: "Session"))
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    DontRepeatTypeInStaticPropertiesTests.testRepetitiveProperties,
-    ]
-  #endif
 }
-

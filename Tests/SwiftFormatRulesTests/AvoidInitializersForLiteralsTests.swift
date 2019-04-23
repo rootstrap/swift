@@ -27,10 +27,4 @@ public class AvoidInitializersForLiteralsTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.avoidInitializerStyleCast("Int(2) "))
     XCTAssertNotDiagnosed(.avoidInitializerStyleCast("Int(bitPattern: 123456)"))
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    AvoidInitializersForLiteralsTests.testInitializersForLiterals,
-  ]
-  #endif
 }

@@ -132,15 +132,4 @@ public class UseEarlyExitsTests: DiagnosingTestCase {
         }
         """)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    UseEarlyExitsTests.testBasicIfElse,
-    UseEarlyExitsTests.testIfElseWithBothEarlyExiting,
-    UseEarlyExitsTests.testElseIfsDoNotChange,
-    UseEarlyExitsTests.testElsesAtEndOfElseIfsDoNotChange,
-    UseEarlyExitsTests.testComplex,
-  ]
-  #endif
-
 }
