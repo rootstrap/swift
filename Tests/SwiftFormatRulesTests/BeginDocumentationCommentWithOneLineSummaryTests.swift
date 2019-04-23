@@ -150,11 +150,4 @@ public class BeginDocumentationCommentWithOneLineSummaryTests: DiagnosingTestCas
     XCTAssertNotDiagnosed(.addBlankLineAfterFirstSentence("Returns the sum of the numbers."))
   }
   #endif
-
-  #if !os(macOS)
-  static let allTests = [
-    BeginDocumentationCommentWithOneLineSummaryTests.testDocLineCommentsWithoutOneSentenceSummary,
-    BeginDocumentationCommentWithOneLineSummaryTests.testBlockLineCommentsWithoutOneSentenceSummary,
-  ]
-  #endif
 }

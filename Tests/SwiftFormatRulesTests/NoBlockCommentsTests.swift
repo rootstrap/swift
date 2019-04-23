@@ -41,10 +41,4 @@ public class NoBlockCommentsTests: DiagnosingTestCase {
                 // of a file
                 """)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    NoBlockCommentsTests.testRemoveBlockComments,
-    ]
-  #endif
 }

@@ -27,10 +27,4 @@ public class UseLetInEveryBoundCaseVariableTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.useLetInBoundCaseVariables)
     XCTAssertNotDiagnosed(.useLetInBoundCaseVariables)
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    UseLetInEveryBoundCaseVariableTests.testInvalidLetBoundCase,
-    ]
-  #endif
 }

@@ -31,10 +31,4 @@ public class AllPublicDeclarationsHaveDocumentationTests: DiagnosingTestCase {
     XCTAssertNotDiagnosed(.declRequiresComment("fhqwhgads()"))
     XCTAssertNotDiagnosed(.declRequiresComment("isDelorted"))
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    AllPublicDeclarationsHaveDocumentationTests.testPublicDeclsWithoutDocs,
-  ]
-  #endif
 }

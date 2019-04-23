@@ -66,12 +66,4 @@ public class OneVariableDeclarationPerLineTests: DiagnosingTestCase {
                 """
     )
   }
-
-#if !os(macOS)
-  static let allTests = [
-    OneVariableDeclarationPerLineTests.testMultipleVariableBindings,
-    OneVariableDeclarationPerLineTests.testNestedVariableBindings,
-  ]
-#endif
-
 }

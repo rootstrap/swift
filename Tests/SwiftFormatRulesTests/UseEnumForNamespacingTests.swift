@@ -42,11 +42,4 @@ public class UseEnumForNamespacingTests: DiagnosingTestCase {
                 }
                 """)
   }
-
-#if !os(macOS)
-  static let allTests = [
-    UseEnumForNamespacingTests.testNonEnumsUsedAsNamespaces,
-  ]
-#endif
-
 }

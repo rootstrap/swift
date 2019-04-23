@@ -57,10 +57,4 @@ public class NoCasesWithOnlyFallthroughTests: DiagnosingTestCase {
                                   }
                                   """)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    NoCasesWithOnlyFallthroughTests.testFallthroughCases,
-    ]
-  #endif
 }

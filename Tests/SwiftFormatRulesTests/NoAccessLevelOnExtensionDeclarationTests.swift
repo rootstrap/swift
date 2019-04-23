@@ -84,10 +84,4 @@ public class NoAccessLevelOnExtensionDeclarationTests: DiagnosingTestCase {
         """
     )
   }
-
-#if !os(macOS)
-static let allTests = [
-  NoAccessLevelOnExtensionDeclarationTests.testExtensionDeclarationAccessLevel,
-  ]
-#endif
 }

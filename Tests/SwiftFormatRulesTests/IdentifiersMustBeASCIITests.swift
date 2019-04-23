@@ -20,10 +20,4 @@ public class IdentifiersMustBeASCIITests: DiagnosingTestCase {
     XCTAssertDiagnosed(.nonASCIICharsNotAllowed(["Δ"],"Δx"))
     XCTAssertDiagnosed(.nonASCIICharsNotAllowed(["🤩", "😆"], "🤩😆"))
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    IdentifiersMustBeASCIITests.testInvalidIdentifiers,
-    ]
-  #endif
 }

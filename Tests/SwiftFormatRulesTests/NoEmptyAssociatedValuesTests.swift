@@ -26,10 +26,4 @@ public class NoEmptyAssociatedValuesTests: DiagnosingTestCase {
                                   }
                                   """)
     }
-    
-    #if !os(macOS)
-    static let allTests = [
-        NoEmptyAssociatedValuesTests.testEmptyAssociatedValue,
-        ]
-    #endif
 }

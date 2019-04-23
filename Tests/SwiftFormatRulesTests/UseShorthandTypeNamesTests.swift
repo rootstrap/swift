@@ -43,10 +43,4 @@ public class UseShorthandTypeNamesTests: DiagnosingTestCase {
                 }
                 """)
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    UseShorthandTypeNamesTests.testLongFormNames,
-    ]
-  #endif
 }

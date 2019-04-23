@@ -38,11 +38,4 @@ public class GroupNumericLiteralsTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.groupNumericLiteral(byStride: 8))
     XCTAssertNotDiagnosed(.groupNumericLiteral(byStride: 8))
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    GroupNumericLiterals.testNumericGrouping,
-    ]
-  #endif
-  
 }

@@ -36,10 +36,4 @@ public class OneCasePerLineTests: DiagnosingTestCase {
                                   }
                                   """)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    OneCasePerLineTests.testInvalidCasesOnLine,
-    ]
-  #endif
 }

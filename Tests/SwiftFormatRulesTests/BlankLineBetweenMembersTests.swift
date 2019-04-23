@@ -137,13 +137,4 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
                 }
                 """)
   }
-  
-  #if !os(macOS)
-  static let allTests = [
-    BlankLineBetweenMembersTests.testInvalidBlankLineBetweenMembers,
-    BlankLineBetweenMembersTests.testTwoMembers,
-    BlankLineBetweenMembersTests.testNestedMembers,
-
-    ]
-  #endif
 }

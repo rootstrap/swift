@@ -25,11 +25,4 @@ public class NoParensAroundConditionsTests: DiagnosingTestCase {
                 switch 4 { default: break }
                 """)
   }
-
-#if !os(macOS)
-  static let allTests = [
-    NoParensAroundConditionsTests.testParensAroundConditions,
-  ]
-#endif
-
 }

@@ -44,11 +44,4 @@ public class NoEmptyTrailingClosureParenthesesTests: DiagnosingTestCase {
     XCTAssertDiagnosed(.removeEmptyTrailingParentheses(name: "myBadClosure"))
     XCTAssertNotDiagnosed(.removeEmptyTrailingParentheses(name: "myClosure"))
   }
-
-  #if !os(macOS)
-  static let allTests = [
-    NoEmptyTrailingClosureParenthesesTests.testInvalidEmptyParenTrailingClosure,
-    ]
-  #endif
-
 }

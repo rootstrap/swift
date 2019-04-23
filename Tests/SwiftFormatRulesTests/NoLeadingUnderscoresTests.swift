@@ -166,19 +166,4 @@ public class NoLeadingUnderscoresTests: DiagnosingTestCase {
     XCTAssertNotDiagnosed(.doNotStartWithUnderscore(identifier: "_foo"))
     XCTAssertNotDiagnosed(.doNotStartWithUnderscore(identifier: "_bar"))
   }
-
-#if !os(macOS)
-  static let allTests = [
-    NoLeadingUnderscores.testVars,
-    NoLeadingUnderscores.testClasses,
-    NoLeadingUnderscores.testEnums,
-    NoLeadingUnderscores.testProtocols,
-    NoLeadingUnderscores.testStructs,
-    NoLeadingUnderscores.testFunctions,
-    NoLeadingUnderscores.testInitializerArguments,
-    NoLeadingUnderscores.testPrecedenceGroups,
-    NoLeadingUnderscores.testTypealiases,
-    NoLeadingUnderscores.testIdentifiersAreIgnoredAtUsage,
-  ]
-#endif
 }

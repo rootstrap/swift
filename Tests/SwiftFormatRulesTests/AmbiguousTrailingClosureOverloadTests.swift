@@ -48,10 +48,4 @@ public class AmbiguousTrailingClosureOverloadTests: DiagnosingTestCase {
     XCTAssertNotDiagnosed(.ambiguousTrailingClosureOverload("baleeted(_:)"))
     XCTAssertNotDiagnosed(.otherAmbiguousOverloadHere("baleeted(_:)"))
   }
-
-#if !os(macOS)
-  static let allTests = [
-    AmbiguousTrailingClosureOverloadTests.testAmbiguousOverloads,
-  ]
-#endif
 }
