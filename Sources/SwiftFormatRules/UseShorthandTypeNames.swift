@@ -36,7 +36,7 @@ public final class UseShorthandTypeNames: SyntaxFormatRule {
 
     // Ensure that all arguments in the clause are shortened and in expected-format by visiting
     // the argument list, first
-    let argList = super.visit(genArg.arguments) as! GenericArgumentListSyntax
+    let argList = visit(genArg.arguments) as! GenericArgumentListSyntax
     // Store trivia of the long form type to pass to the new shorthand type later
     let trivia = retrieveTrivia(from: node)
 
@@ -61,10 +61,9 @@ public final class UseShorthandTypeNames: SyntaxFormatRule {
 
   // Visits all potential long forms interpreted as expressions
   public override func visit(_ node: SpecializeExprSyntax) -> ExprSyntax {
-    let argList = super.visit(node.genericArgumentClause.arguments) as! GenericArgumentListSyntax
+    let argList = visit(node.genericArgumentClause.arguments) as! GenericArgumentListSyntax
     guard let exp = node.expression as? IdentifierExprSyntax else { return node }
     let trivia = retrieveTrivia(from: node)
-    
     switch exp.identifier.text {
     case "Array":
       guard argList.count == 1 else { return node }
@@ -199,7 +198,7 @@ public final class UseShorthandTypeNames: SyntaxFormatRule {
     guard let simpleTypeId = member.baseType as? SimpleTypeIdentifierSyntax else { return nil }
     guard let genArgClause = simpleTypeId.genericArgumentClause else { return nil }
     // Node will only change if an argument in the generic argument clause is shortened
-    let argClause = super.visit(genArgClause) as! GenericArgumentClauseSyntax
+    let argClause = visit(genArgClause) as! GenericArgumentClauseSyntax
     let idExp = SyntaxFactory.makeIdentifierExpr(identifier: simpleTypeId.name,
                                                  declNameArguments: nil)
     let specialExp = SyntaxFactory.makeSpecializeExpr(expression: idExp,

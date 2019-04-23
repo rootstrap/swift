@@ -101,8 +101,8 @@ public class BeginDocumentationCommentWithOneLineSummaryTests: DiagnosingTestCas
       "This block comment contains a sentence summary of two lines of code."))
   }
 
-  #if os(macOS)
   public func testApproximationsOnMacOS() {
+    #if os(macOS)
     // Let macOS also verify that the fallback mode works, which gives us signal about whether it
     // will also succeed on Linux (where the linguistic APIs are not currently available).
     BeginDocumentationCommentWithOneLineSummary.forcesFallbackModeForTesting = true
@@ -148,6 +148,6 @@ public class BeginDocumentationCommentWithOneLineSummaryTests: DiagnosingTestCas
       "Contains a comment as description that needs a sentece of two lines of code."))
     XCTAssertNotDiagnosed(.addBlankLineAfterFirstSentence("The background color of the view."))
     XCTAssertNotDiagnosed(.addBlankLineAfterFirstSentence("Returns the sum of the numbers."))
+    #endif
   }
-  #endif
 }
