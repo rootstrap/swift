@@ -11,10 +11,10 @@ public class PrettyPrintTestCase: XCTestCase {
     input: String,
     expected: String,
     linelength: Int,
+    configuration: Configuration = Configuration(),
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    let configuration = Configuration()
     configuration.lineLength = linelength
 
     let context = Context(

@@ -80,8 +80,7 @@ public class AvailabilityConditionTests: PrettyPrintTestCase {
 
       if #available(OSX 10.12, *) {
         // Do stuff
-      }
-      else {
+      } else {
         let a = 123
         let b = "abc"
       }
@@ -89,8 +88,7 @@ public class AvailabilityConditionTests: PrettyPrintTestCase {
       #if canImport(os)
         if #available(OSX 10.12, *) {
           // Do stuff
-        }
-        else {
+        } else {
           let a = 123
           let b = "abc"
         }
@@ -101,8 +99,7 @@ public class AvailabilityConditionTests: PrettyPrintTestCase {
         if #available(OSX 10.12, *) {
 
           let a = 123
-        }
-        else {
+        } else {
           // do stuff
         }
       }

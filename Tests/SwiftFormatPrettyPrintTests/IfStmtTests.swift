@@ -1,3 +1,5 @@
+import SwiftFormatConfiguration
+
 public class IfStmtTests: PrettyPrintTestCase {
   public func testIfStatement() {
     let input =
@@ -59,7 +61,51 @@ public class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  public func testIfElseStatement() {
+  public func testIfElseStatement_noBreakBeforeElse() {
+    let input =
+      """
+      if var1 < var2 {
+        let a = 23
+      }
+      else if d < e {
+        var b = 123
+      }
+      else {
+        var c = 456
+      }
+
+      if var1 < var2 {
+        let a = 23
+      }
+      else if var3 < var4 {
+        var b = 123
+        var c = 456
+      }
+      """
+
+    let expected =
+      """
+      if var1 < var2 {
+        let a = 23
+      } else if d < e {
+        var b = 123
+      } else {
+        var c = 456
+      }
+
+      if var1 < var2 {
+        let a = 23
+      } else if var3 < var4 {
+        var b = 123
+        var c = 456
+      }
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 23)
+  }
+
+  public func testIfElseStatement_breakBeforeElse() {
     let input =
       """
       if var1 < var2 {
@@ -101,7 +147,9 @@ public class IfStmtTests: PrettyPrintTestCase {
 
       """
 
-    assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
+    let config = Configuration()
+    config.lineBreakBeforeControlFlowKeywords = true
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: config)
   }
 
   public func testMatchingPatternConditions() {

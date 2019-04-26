@@ -27,7 +27,7 @@ public class Configuration: Codable {
     case indentation
     case respectsExistingLineBreaks
     case blankLineBetweenMembers
-    case surroundSymbolsWithBackticks
+    case lineBreakBeforeControlFlowKeywords
     case rules
   }
 
@@ -70,6 +70,14 @@ public class Configuration: Codable {
   /// Rules for limiting blank lines between members.
   public var blankLineBetweenMembers = BlankLineBetweenMembersConfiguration()
 
+  /// Determines the line-breaking behavior for control flow keywords that follow a closing brace,
+  /// like `else` and `catch`.
+  ///
+  /// If true, a line break will be added before the keyword, forcing it onto its own line. If
+  /// false (the default), the keyword will be placed after the closing brace (separated by a
+  /// space).
+  public var lineBreakBeforeControlFlowKeywords = false
+
   /// Constructs a Configuration with all default values.
   public init() {
     self.version = highestSupportedConfigurationVersion
@@ -107,6 +115,9 @@ public class Configuration: Codable {
     self.blankLineBetweenMembers = try container.decodeIfPresent(
       BlankLineBetweenMembersConfiguration.self, forKey: .blankLineBetweenMembers)
       ?? BlankLineBetweenMembersConfiguration()
+    self.lineBreakBeforeControlFlowKeywords
+      = try container.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeControlFlowKeywords)
+      ?? true
     self.rules = try container.decodeIfPresent([String: Bool].self, forKey: .rules) ?? [:]
   }
 
@@ -120,6 +131,8 @@ public class Configuration: Codable {
     try container.encode(indentation, forKey: .indentation)
     try container.encode(respectsExistingLineBreaks, forKey: .respectsExistingLineBreaks)
     try container.encode(blankLineBetweenMembers, forKey: .blankLineBetweenMembers)
+    try container.encode(
+      lineBreakBeforeControlFlowKeywords, forKey: .lineBreakBeforeControlFlowKeywords)
     try container.encode(rules, forKey: .rules)
   }
 }
