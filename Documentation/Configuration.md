@@ -46,6 +46,12 @@ top-level keys and values:
         property declarations are allowed to appear consecutively without a
         blank line separating them.
 
+*   `lineBreakBeforeControlFlowKeywords` _(boolean)_: Determines the
+    line-breaking behavior for control flow keywords that follow a closing
+    brace, like `else` and `catch`. If true, a line break will be added before
+    the keyword, forcing it onto its own line. If false (the default), the
+    keyword will be placed after the closing brace (separated by a space).
+
 > TODO: Add support for enabling/disabling specific syntax transformations in
 > the pipeline.
 
@@ -64,7 +70,8 @@ An example `.swift-format` configuration file is shown below.
     "respectsExistingLineBreaks": true,
     "blankLineBetweenMembers": {
         "ignoreSingleLineProperties": true
-    }
+    },
+    "lineBreakBeforeControlFlowKeywords": true
 }
 ```
 

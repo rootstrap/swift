@@ -370,7 +370,8 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
     arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
-    before(node.elseKeyword, tokens: .newline)
+    let elsePrecedingBreak = config.lineBreakBeforeControlFlowKeywords ? Token.newline : Token.space
+    before(node.elseKeyword, tokens: elsePrecedingBreak)
     if node.elseBody is IfStmtSyntax {
       after(node.elseKeyword, tokens: .space)
     }
@@ -415,7 +416,9 @@ private final class TokenStreamCreator: SyntaxVisitor {
   override func visit(_ node: RepeatWhileStmtSyntax) -> SyntaxVisitorContinueKind {
     arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
-    before(node.whileKeyword, tokens: .break(.same))
+    let whilePrecedingBreak =
+      config.lineBreakBeforeControlFlowKeywords ? Token.break(.same) : Token.space
+    before(node.whileKeyword, tokens: whilePrecedingBreak)
     after(node.whileKeyword, tokens: .space)
 
     return .visitChildren
@@ -427,8 +430,10 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
-    before(node.catchKeyword, tokens: .newline)
-    before(node.pattern?.firstToken, tokens: .break)
+    let catchPrecedingBreak =
+      config.lineBreakBeforeControlFlowKeywords ? Token.newline : Token.space
+    before(node.catchKeyword, tokens: catchPrecedingBreak)
+    before(node.pattern?.firstToken, tokens: .space)
 
     arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
@@ -983,7 +988,30 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   override func visit(_ node: WhereClauseSyntax) -> SyntaxVisitorContinueKind {
-    before(node.whereKeyword, tokens: .break(.same), .open)
+    // We need to special case `where`-clauses associated with `catch` blocks when
+    // `lineBreakBeforeControlFlowKeywords == false`, because that's the one situation where we
+    // want the `where` keyword to be treated as a continuation; that way, we get this:
+    //
+    //     } catch LongExceptionName
+    //       where longCondition
+    //     {
+    //       ...
+    //     }
+    //
+    // instead of this:
+    //
+    //     } catch LongExceptionName
+    //     where longCondition {
+    //       ...
+    //     }
+    //
+    let wherePrecedingBreak: Token
+    if !config.lineBreakBeforeControlFlowKeywords && node.parent is CatchClauseSyntax {
+      wherePrecedingBreak = .break(.continue)
+    } else {
+      wherePrecedingBreak = .break(.same)
+    }
+    before(node.whereKeyword, tokens: wherePrecedingBreak, .open)
     after(node.whereKeyword, tokens: .break)
     after(node.lastToken, tokens: .close)
     return .visitChildren
