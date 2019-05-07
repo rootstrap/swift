@@ -84,14 +84,18 @@ public class DiagnosingTestCase: XCTestCase {
   ///   - expected: The expected result of formatting the input code.
   ///   - file: The file the test resides in (defaults to the current caller's file)
   ///   - line:  The line the test resides in (defaults to the current caller's line)
+  ///   - checkForUnassertedDiagnostics: Fail the test if there are any unasserted linter
+  ///     diagnostics.
   func XCTAssertFormatting(
     _ formatType: SyntaxFormatRule.Type,
     input: String,
     expected: String,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    checkForUnassertedDiagnostics: Bool = false
   ) {
     do {
+      shouldCheckForUnassertedDiagnostics = checkForUnassertedDiagnostics
       let syntax = try SyntaxTreeParser.parse(input)
       let formatter = formatType.init(context: context!)
       let result = formatter.visit(syntax)
