@@ -962,7 +962,13 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   override func visit(_ node: ConditionElementSyntax) -> SyntaxVisitorContinueKind {
-    after(node.trailingComma, tokens:. break)
+    before(node.firstToken, tokens: .open)
+    if let comma = node.trailingComma {
+      after(comma, tokens: .close, .break)
+    }
+    else {
+      after(node.lastToken, tokens: .close)
+    }
     return .visitChildren
   }
 
@@ -1375,9 +1381,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   override func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
-    before(node.firstToken, tokens: .open)
     after(node.letOrVarKeyword, tokens: .break)
-    after(node.lastToken, tokens: .close)
     return .visitChildren
   }
 
