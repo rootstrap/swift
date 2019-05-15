@@ -182,4 +182,26 @@ public class IfStmtTests: PrettyPrintTestCase {
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
+
+  public func testIfLetStatements() {
+    let input =
+      """
+      if let SomeReallyLongVar = Some.More.Stuff(), let a = myfunc() {
+        // do stuff
+      }
+      """
+
+    let expected =
+      """
+      if let SomeReallyLongVar
+        = Some.More.Stuff(), let a = myfunc()
+      {
+        // do stuff
+      }
+
+      """
+
+    // The line length ends on the last paren of .Stuff()
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 44)
+  }
 }
