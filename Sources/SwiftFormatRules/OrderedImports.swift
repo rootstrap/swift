@@ -230,6 +230,12 @@ func generateLines(codeBlockItemList: CodeBlockItemListSyntax) -> [Line] {
   var afterNewline = false
   var isFirstBlock = true
 
+  func appendNewLine() {
+    lines.append(currentLine)
+    currentLine = Line()
+    afterNewline = true  // Note: trailing line comments always come before any newlines.
+  }
+
   for block in codeBlockItemList {
 
     if let leadingTrivia = block.leadingTrivia {
@@ -240,9 +246,7 @@ func generateLines(codeBlockItemList: CodeBlockItemListSyntax) -> [Line] {
         // Create new Line objects when we encounter newlines.
         case .newlines(let N):
           for _ in 0..<N {
-            lines.append(currentLine)
-            currentLine = Line()
-            afterNewline = true  // Note: trailing line comments always come before any newlines.
+            appendNewLine()
           }
         default:
           if afterNewline || isFirstBlock {
@@ -252,6 +256,8 @@ func generateLines(codeBlockItemList: CodeBlockItemListSyntax) -> [Line] {
           }
         }
       }
+    } else if currentLine.codeBlock != nil {
+        appendNewLine()
     }
     currentLine.codeBlock = block  // This represents actual code: imports and otherwise.
     isFirstBlock = false
