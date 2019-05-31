@@ -1373,10 +1373,6 @@ private final class TokenStreamCreator: SyntaxVisitor {
     return .visitChildren
   }
 
-  func visit(_ node: StringInterpolationExprSyntax) -> SyntaxVisitorContinueKind {
-    return .visitChildren
-  }
-
   func visit(_ node: MatchingPatternConditionSyntax) -> SyntaxVisitorContinueKind {
     before(node.firstToken, tokens: .open)
     after(node.caseKeyword, tokens: .break)
