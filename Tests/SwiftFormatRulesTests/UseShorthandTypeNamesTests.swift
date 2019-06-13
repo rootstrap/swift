@@ -23,6 +23,8 @@ public class UseShorthandTypeNamesTests: DiagnosingTestCase {
                y: Dictionary<Array<Optional<String>>, Optional<Int>>) {
                Dictionary<Array<Int>.Index, String>.init()
                Dictionary<String, Optional<Float>>.init()
+               UnsafePointer<UInt8>.init()
+               UnsafeMutablePointer<UInt8>.init()
              }
              """,
       expected: """
@@ -40,7 +42,14 @@ public class UseShorthandTypeNamesTests: DiagnosingTestCase {
                   y: [[String?]: Int?]) {
                   [Array<Int>.Index: String].init()
                   [String: Float?].init()
+                  UnsafePointer<UInt8>.init()
+                  UnsafeMutablePointer<UInt8>.init()
                 }
                 """)
+    XCTAssertDiagnosed(.useTypeShorthand(type: "Array"))
+    XCTAssertDiagnosed(.useTypeShorthand(type: "Dictionary"))
+    XCTAssertDiagnosed(.useTypeShorthand(type: "Optional"))
+    XCTAssertNotDiagnosed(.useTypeShorthand(type: "UnsafePointer"))
+    XCTAssertNotDiagnosed(.useTypeShorthand(type: "UnsafeMutablePointer"))
   }
 }
