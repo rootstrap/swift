@@ -18,122 +18,62 @@ import SwiftSyntax
 ///
 /// Optionally, declarations of single-line properties can be ignored.
 ///
-/// Lint: If more than the maximum number of blank lines appear, a lint error is raised.
-///       If there are no blank lines between members, a lint error is raised.
+/// This rule does not check the maximum number of blank lines; the pretty printer clamps those
+/// as needed.
+///
+/// Lint: If there are no blank lines between members, a lint error is raised.
 ///
 /// Format: Declarations with no blank lines will have a blank line inserted.
-///         Declarations with more than the maximum number of blank lines will be reduced to the
-///         maximum number of blank lines.
 ///
-/// Configuration: maximumBlankLines, blankLineBetweenMembers.ignoreSingleLineProperties
+/// Configuration: blankLineBetweenMembers.ignoreSingleLineProperties
 ///
 /// - SeeAlso: https://google.github.io/swift#vertical-whitespace
 public final class BlankLineBetweenMembers: SyntaxFormatRule {
   public override func visit(_ node: MemberDeclBlockSyntax) -> Syntax {
-    var membersList = [MemberDeclListItemSyntax]()
-    var hasValidNumOfBlankLines = true
+    guard let firstMember = node.members.first else { return super.visit(node) }
+
+    let ignoreSingleLine = context.configuration.blankLineBetweenMembers.ignoreSingleLineProperties
+
+    // The first member can just be added as-is; we don't force any newline before it.
+    var membersList = [visitNestedDecls(of: firstMember)]
 
     // Iterates through all the declaration of the member, to ensure that the declarations have
-    // at least on blank line and doesn't exceed the maximum number of blank lines.
-    for member in node.members {
-      let currentMember = checkForNestedMembers(member)
-      guard let memberTrivia = currentMember.leadingTrivia else { continue }
-      let triviaWithoutTrailingSpaces = memberTrivia.withoutTrailingSpaces()
-      guard let firstPiece = triviaWithoutTrailingSpaces.first else { continue }
+    // at least one blank line between them when necessary.
+    var previousMemberWasSingleLine = firstMember.isSingleLine(
+      includingLeadingComment: true,
+      sourceLocationConverter: context.sourceLocationConverter
+    )
 
-      if exceedsMaxBlankLines(triviaWithoutTrailingSpaces) {
-        let correctTrivia = removeExtraBlankLines(triviaWithoutTrailingSpaces, currentMember)
-        let newMember = replaceTrivia(
-          on: currentMember,
-          token: currentMember.firstToken!,
+    for member in node.members.dropFirst() {
+      var memberToAdd = visitNestedDecls(of: member)
+
+      let memberIsSingleLine = memberToAdd.isSingleLine(
+        includingLeadingComment: true,
+        sourceLocationConverter: context.sourceLocationConverter
+      )
+
+      if let memberTrivia = memberToAdd.leadingTrivia,
+        !(ignoreSingleLine && previousMemberWasSingleLine && memberIsSingleLine)
+        && memberTrivia.numberOfLeadingNewlines == 1  // Only one newline => no blank line
+      {
+        let correctTrivia = Trivia.newlines(1) + memberTrivia
+        memberToAdd = replaceTrivia(
+          on: memberToAdd, token: memberToAdd.firstToken!,
           leadingTrivia: correctTrivia
         ) as! MemberDeclListItemSyntax
-        
-        hasValidNumOfBlankLines = false
-        membersList.append(newMember)
+
+        diagnose(.addBlankLine, on: memberToAdd)
       }
-      // Ensures that there is at least one blank line between each member of a type.
-      // Unless is a single-line declaration and the format is configured to
-      // ignored them.
-      else if case .newlines(let numNewLines) = firstPiece,
-              !ignoreItem(item: currentMember),
-              numNewLines == 1 {
-        let numBlankLines = member.indexInParent == 0 ? 0 : 1
-        let correctTrivia = Trivia.newlines(numBlankLines) + memberTrivia
-        let newMember = replaceTrivia(
-          on: currentMember, token: currentMember.firstToken!,
-          leadingTrivia: correctTrivia
-        ) as! MemberDeclListItemSyntax
-        
-        diagnose(.addBlankLine, on: currentMember)
-        hasValidNumOfBlankLines = false
-        membersList.append(newMember)
-      }
-      else {
-        membersList.append(member)
-      }
+
+      membersList.append(memberToAdd)
+      previousMemberWasSingleLine = memberIsSingleLine
     }
-    
-    return hasValidNumOfBlankLines ? node :
-      node.withMembers(SyntaxFactory.makeMemberDeclList(membersList))
-  }
-  
-  /// Indicates if the given trivia has more than
-  /// the maximum number of blank lines.
-  func exceedsMaxBlankLines(_ trivia: Trivia) -> Bool {
-    let maxBlankLines = context.configuration.maximumBlankLines
 
-    for piece in trivia {
-      if case .newlines(let num) = piece,
-        num - 1 > maxBlankLines {
-        return true
-      }
-    }
-    return false
-  }
-  
-  /// Returns the given trivia without any set of consecutive blank lines
-  /// that exceeds the maximumBlankLines.
-  func removeExtraBlankLines(_ trivia: Trivia, _ member: MemberDeclListItemSyntax) -> Trivia {
-    let maxBlankLines = context.configuration.maximumBlankLines
-    var pieces = [TriviaPiece]()
-    
-    // Iterates through the trivia, verifying that the number of blank
-    // lines in the file do not exceed the maximumBlankLines. If it does
-    // a lint error is raised.
-    for piece in trivia {
-      if case .newlines(let num) = piece,
-         num - 1 > maxBlankLines {
-        pieces.append(.newlines(maxBlankLines + 1))
-        diagnose(.removeBlankLines(count: num - maxBlankLines), on: member)
-      }
-      else {
-        pieces.append(piece)
-      }
-    }
-    return Trivia(pieces: pieces)
-  }
-
-  /// Indicates if a declaration has to be ignored by checking if it's
-  /// a single line and if the format is configured to ignore single lines.
-  func ignoreItem(item: MemberDeclListItemSyntax) -> Bool {
-    guard let firstToken = item.firstToken else { return false }
-    guard let lastToken = item.lastToken else { return false }
-
-    let firstTokenLocation = context.sourceLocationConverter.location(
-      for: firstToken.positionAfterSkippingLeadingTrivia)
-    let lastTokenLocation = context.sourceLocationConverter.location(
-      for: lastToken.positionAfterSkippingLeadingTrivia)
-    let isSingleLine = firstTokenLocation.line == lastTokenLocation.line
-
-    let ignoreLine = context.configuration.blankLineBetweenMembers
-      .ignoreSingleLineProperties
-
-    return isSingleLine && ignoreLine
+    return node.withMembers(SyntaxFactory.makeMemberDeclList(membersList))
   }
 
   /// Recursively ensures all nested member types follows the BlankLineBetweenMembers rule.
-  func checkForNestedMembers(_ member: MemberDeclListItemSyntax) -> MemberDeclListItemSyntax {
+  func visitNestedDecls(of member: MemberDeclListItemSyntax) -> MemberDeclListItemSyntax {
     switch member.decl {
     case let nestedEnum as EnumDeclSyntax:
       let nestedMembers = visit(nestedEnum.members)
@@ -157,22 +97,6 @@ public final class BlankLineBetweenMembers: SyntaxFormatRule {
   }
 }
 
-/// Indicates if the given trivia piece is any type of comment.
-func isComment(_ triviaPiece: TriviaPiece) -> Bool {
-  switch triviaPiece {
-  case .lineComment(_), .docLineComment(_),
-       .blockComment(_), .docBlockComment(_):
-    return true
-  default:
-    return false
-  }
-}
-
 extension Diagnostic.Message {
   static let addBlankLine = Diagnostic.Message(.warning, "add one blank line between declarations")
-  
-  static func removeBlankLines(count: Int) -> Diagnostic.Message {
-    let ending = count > 1 ? "s" : ""
-    return Diagnostic.Message(.warning, "remove \(count) blank line\(ending)")
-  }
 }

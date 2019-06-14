@@ -5,14 +5,52 @@ import SwiftSyntax
 @testable import SwiftFormatRules
 
 public class BlankLineBetweenMembersTests: DiagnosingTestCase {
+  public func testBlankLineBeforeFirstChildOrNot() {
+    XCTAssertFormatting(
+      BlankLineBetweenMembers.self,
+      input: """
+        struct Foo {
+          /// Doc comment
+          func foo() {
+            code()
+          }
+        }
+
+        struct Bar {
+
+          /// Doc comment
+          func bar() {
+            code()
+          }
+        }
+        """,
+      expected: """
+        struct Foo {
+          /// Doc comment
+          func foo() {
+            code()
+          }
+        }
+
+        struct Bar {
+
+          /// Doc comment
+          func bar() {
+            code()
+          }
+        }
+        """
+    )
+  }
+
   public func testInvalidBlankLineBetweenMembers() {
     XCTAssertFormatting(
       BlankLineBetweenMembers.self,
       input: """
              struct foo1 {
-             
-             
-             
+
+
+
                var test1 = 13
                // Multiline
                // comment for b
@@ -21,9 +59,9 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
 
 
                var c = 11
-                    
 
-                      
+
+
 
                // Multiline comment
                // for d
@@ -38,14 +76,22 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
              """,
       expected: """
                 struct foo1 {
-                
+
+
+
                   var test1 = 13
+
                   // Multiline
                   // comment for b
                   var b = 12
+
                   /*BlockComment*/
-                
+
+
                   var c = 11
+
+
+
 
                   // Multiline comment
                   // for d
@@ -60,7 +106,7 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
                 }
                 """)
   }
-  
+
   public func testTwoMembers() {
     XCTAssertFormatting(
       BlankLineBetweenMembers.self,
@@ -94,7 +140,7 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
                 }
                 """)
   }
-  
+
   public func testNestedMembers() {
     XCTAssertFormatting(
       BlankLineBetweenMembers.self,
@@ -107,8 +153,6 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
 
                  case jack, queen, king, ace
                }
-
-
 
                struct secondFoo3 {
                  var a = 1
@@ -123,6 +167,7 @@ public class BlankLineBetweenMembersTests: DiagnosingTestCase {
                   // nested Rank enumeration
                   enum Rank: Int {
                     case two = 2, three, four
+
 
                     case jack, queen, king, ace
                   }

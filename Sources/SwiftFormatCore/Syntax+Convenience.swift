@@ -27,6 +27,45 @@ extension Syntax {
     }
     return nil
   }
+
+  /// Returns true if the node occupies a single line.
+  ///
+  /// - Parameters:
+  ///   - includingLeadingComment: If true, factor any possible leading comments into the
+  ///     determination of whether the node occupies a single line.
+  ///   - sourceLocationConverter: Used to convert source positions to line/column locations.
+  /// - Returns: True if the node occupies a single line.
+  public func isSingleLine(
+    includingLeadingComment: Bool,
+    sourceLocationConverter: SourceLocationConverter
+  ) -> Bool {
+    guard let firstToken = firstToken, let lastToken = lastToken else { return true }
+
+    let startPosition: AbsolutePosition
+    if includingLeadingComment {
+      // Iterate over the trivia, stopping at the first comment, and using that as the start
+      // position.
+      var currentPosition = firstToken.position
+      for piece in firstToken.leadingTrivia {
+        switch piece {
+        case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+          break
+        default:
+          currentPosition += piece.sourceLength
+        }
+      }
+      startPosition = currentPosition
+    }
+    else {
+      startPosition = firstToken.positionAfterSkippingLeadingTrivia
+    }
+
+    let startLocation = sourceLocationConverter.location(for: startPosition)
+    let endLocation = sourceLocationConverter.location(
+      for: lastToken.endPositionBeforeTrailingTrivia)
+
+    return startLocation.line == endLocation.line
+  }
 }
 
 extension SyntaxCollection {
