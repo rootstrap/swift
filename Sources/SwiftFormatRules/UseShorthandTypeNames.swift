@@ -32,7 +32,6 @@ public final class UseShorthandTypeNames: SyntaxFormatRule {
           !(parent is MemberTypeIdentifierSyntax) else { return node }
     // Type is in long form if it has a non-nil generic argument clause
     guard let genArg = node.genericArgumentClause else { return node }
-    diagnose(.useTypeShorthand(type: node.name.text.lowercased()), on: node)
 
     // Ensure that all arguments in the clause are shortened and in expected-format by visiting
     // the argument list, first
@@ -40,23 +39,23 @@ public final class UseShorthandTypeNames: SyntaxFormatRule {
     // Store trivia of the long form type to pass to the new shorthand type later
     let trivia = retrieveTrivia(from: node)
 
+    let newNode: TypeSyntax
     switch node.name.text {
     case "Array":
       guard let arg = argList.firstAndOnly else { return node }
-      let newArray = shortenArrayType(argument: arg, trivia: trivia)
-      return newArray
+      newNode = shortenArrayType(argument: arg, trivia: trivia)
     case "Dictionary":
       guard let args = exactlyTwoChildren(of: argList) else { return node }
-      let newDictionary = shortenDictionaryType(arguments: args, trivia: trivia)
-      return newDictionary
+      newNode = shortenDictionaryType(arguments: args, trivia: trivia)
     case "Optional":
       guard let arg = argList.firstAndOnly else { return node }
-      let newOptional = shortenOptionalType(argument: arg, trivia: trivia)
-      return newOptional
+      newNode = shortenOptionalType(argument: arg, trivia: trivia)
     default:
-      break
+      return node
     }
-    return node
+
+    diagnose(.useTypeShorthand(type: node.name.text), on: node)
+    return newNode
   }
 
   // Visits all potential long forms interpreted as expressions
