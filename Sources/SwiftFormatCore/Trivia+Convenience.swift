@@ -13,7 +13,7 @@
 import SwiftSyntax
 
 extension Trivia {
-  /// Returns the number of whitespace characters after this node.
+  /// Returns the number of whitespace characters in this trivia.
   public var numberOfSpaces: Int {
     var count = 0
     for piece in self {
@@ -24,12 +24,26 @@ extension Trivia {
     return count
   }
 
-  /// Returns the number of newlines after this node.
+  /// Returns the number of newlines in this trivia.
   public var numberOfNewlines: Int {
     var count = 0
     for piece in self {
       if case .newlines(let n) = piece {
         count += n
+      }
+    }
+    return count
+  }
+
+  /// Returns the number of leading newlines in this trivia.
+  public var numberOfLeadingNewlines: Int {
+    var count = 0
+    loop: for piece in self {
+      switch piece {
+      case .newlines(let n): count += n
+      case .carriageReturns(let n): count += n
+      case .carriageReturnLineFeeds(let n): count += n
+      default: break loop
       }
     }
     return count
