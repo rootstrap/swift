@@ -53,6 +53,7 @@ extension BlankLineBetweenMembersTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__BlankLineBetweenMembersTests = [
+        ("testBlankLineBeforeFirstChildOrNot", testBlankLineBeforeFirstChildOrNot),
         ("testInvalidBlankLineBetweenMembers", testInvalidBlankLineBetweenMembers),
         ("testNestedMembers", testNestedMembers),
         ("testTwoMembers", testTwoMembers),
@@ -381,9 +382,11 @@ extension ValidateDocumentationCommentsTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__ValidateDocumentationCommentsTests = [
+        ("testInitializer", testInitializer),
         ("testParameterDocumentation", testParameterDocumentation),
         ("testParametersName", testParametersName),
         ("testReturnDocumentation", testReturnDocumentation),
+        ("testSeparateLabelAndIdentifier", testSeparateLabelAndIdentifier),
         ("testValidDocumentation", testValidDocumentation),
     ]
 }

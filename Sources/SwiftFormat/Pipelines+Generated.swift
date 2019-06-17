@@ -158,6 +158,7 @@ extension LintPipeline {
     _ = AllPublicDeclarationsHaveDocumentation(context: context).visit(node)
     _ = BeginDocumentationCommentWithOneLineSummary(context: context).visit(node)
     _ = UseTripleSlashForDocumentationComments(context: context).visit(node)
+    _ = ValidateDocumentationComments(context: context).visit(node)
     return .visitChildren
   }
 

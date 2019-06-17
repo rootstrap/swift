@@ -29,7 +29,23 @@ public struct ValidateDocumentationComments: SyntaxLintRule {
     self.context = context
   }
 
+  public func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    return checkFunctionLikeDocumentation(
+      node, name: "init", parameters: node.parameters.parameterList)
+  }
+
   public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    return checkFunctionLikeDocumentation(
+      node, name: node.identifier.text, parameters: node.signature.input.parameterList,
+      returnClause: node.signature.output)
+  }
+
+  private func checkFunctionLikeDocumentation(
+    _ node: DeclSyntax,
+    name: String,
+    parameters: FunctionParameterListSyntax,
+    returnClause: ReturnClauseSyntax? = nil
+  ) -> SyntaxVisitorContinueKind {
     guard let declComment = node.docComment else { return .skipChildren }
     guard let commentInfo = node.docCommentInfo else { return .skipChildren }
     guard let params = commentInfo.parameters else { return .skipChildren }
@@ -48,8 +64,8 @@ public struct ValidateDocumentationComments: SyntaxLintRule {
     let hasPluralDesc = declComment.components(separatedBy: .newlines)
       .contains { $0.trimmingCharacters(in: .whitespaces).starts(with: "- Parameters") }
 
-    validateReturn(node, returnDesc: commentInfo.returnsDescription)
-    let funcParameters = funcParametersIdentifiers(in: node.signature.input.parameterList)
+    validateReturn(returnClause, name: name, returnDesc: commentInfo.returnsDescription)
+    let funcParameters = funcParametersIdentifiers(in: parameters)
 
     // If the documentation of the parameters is wrong 'docCommentInfo' won't
     // parse the parameters correctly. First the documentation has to be fix
@@ -67,7 +83,7 @@ public struct ValidateDocumentationComments: SyntaxLintRule {
     // are the same.
     if (params.count != funcParameters.count) ||
       !parametersAreEqual(params: params, funcParam: funcParameters) {
-      diagnose(.parametersDontMatch(funcName: node.identifier.text), on: node)
+      diagnose(.parametersDontMatch(funcName: name), on: node)
     }
 
     return .skipChildren
@@ -75,12 +91,12 @@ public struct ValidateDocumentationComments: SyntaxLintRule {
 
   /// Ensures the function has a return documentation if it actually returns
   /// a value.
-  func validateReturn(_ node: FunctionDeclSyntax, returnDesc: String?) {
-    if node.signature.output == nil && returnDesc != nil {
-      diagnose(.removeReturnComment(funcName: node.identifier.text), on: node)
+  func validateReturn(_ returnClause: ReturnClauseSyntax?, name: String, returnDesc: String?) {
+    if returnClause == nil && returnDesc != nil {
+      diagnose(.removeReturnComment(funcName: name), on: returnClause)
     }
-    else if node.signature.output != nil && returnDesc == nil {
-      diagnose(.documentReturnValue(funcName: node.identifier.text), on: node)
+    else if returnClause != nil && returnDesc == nil {
+      diagnose(.documentReturnValue(funcName: name), on: returnClause)
     }
   }
 }
@@ -89,9 +105,13 @@ public struct ValidateDocumentationComments: SyntaxLintRule {
 /// paramters identifiers.
 func funcParametersIdentifiers(in paramList: FunctionParameterListSyntax) -> [String] {
   var funcParameters = [String]()
-  for parameter in paramList
-  {
-    guard let parameterIdentifier = parameter.firstName else { continue }
+  for parameter in paramList {
+    // If there is a label and an identifier, then the identifier (`secondName`) is the name that
+    // should be documented. Otherwise, the label and identifier are the same, occupying
+    // `firstName`.
+    guard let parameterIdentifier = parameter.secondName ?? parameter.firstName else {
+      continue
+    }
     funcParameters.append(parameterIdentifier.text)
   }
   return funcParameters
