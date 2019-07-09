@@ -595,7 +595,11 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
-    before(node.dot, tokens: .break(.continue, size: 0))
+    if node.base != nil {
+      // Only insert a break before the dot if there is something preceding the dot (i.e., it is not
+      // an implicit member access).
+      before(node.dot, tokens: .break(.continue, size: 0))
+    }
     return .visitChildren
   }
 
