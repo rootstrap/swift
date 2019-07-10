@@ -168,8 +168,7 @@ public class CommentTests: PrettyPrintTestCase {
       }
 
       switch myvar {
-      case .one,
-        .two,  // three
+      case .one, .two,  // three
         .four:
         dostuff()
       default: ()
@@ -226,8 +225,7 @@ public class CommentTests: PrettyPrintTestCase {
 
       // Trailing comment
       let c = [
-        123,
-        456  // small comment
+        123, 456  // small comment
       ]
 
       /* Array comment */

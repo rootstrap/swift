@@ -293,7 +293,7 @@ public class PrettyPrinter {
       }
 
     // Print out the number of spaces according to the size, and adjust spaceRemaining.
-    case .space(let size):
+    case .space(let size, _):
       enqueueSpaces(size)
 
     // Apply `count` line breaks, calculate the indentation required, and adjust spaceRemaining.
@@ -386,7 +386,7 @@ public class PrettyPrinter {
         total += size
 
       // Space tokens have a length equal to its size.
-      case .space(let size):
+      case .space(let size, _):
         lengths.append(size)
         total += size
 
@@ -490,9 +490,9 @@ public class PrettyPrinter {
       printDebugIndent()
       print("[NEWLINES N: \(N) Required: \(required) Length: \(length) Idx: \(idx)]")
 
-    case .space(let size):
+    case .space(let size, let flexible):
       printDebugIndent()
-      print("[SPACE Size: \(size) Length: \(length) Idx: \(idx)]")
+      print("[SPACE Size: \(size) Flexible: \(flexible) Length: \(length) Idx: \(idx)]")
 
     case .comment(let comment, let wasEndOfLine):
       printDebugIndent()

@@ -101,20 +101,17 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   private func verbatimToken(_ node: Syntax) {
-    if let firstToken = node.firstToken, let before = beforeMap[firstToken] {
-      tokens += before
+    if let firstToken = node.firstToken {
+      appendBeforeTokens(firstToken)
     }
+
     appendToken(.verbatim(Verbatim(text: node.description)))
+
     if let lastToken = node.lastToken {
       // Extract any comments that trail the verbatim block since they belong to the next syntax
       // token. Leading comments don't need special handling since they belong to the current node,
       // and will get printed.
-      extractTrailingComment(lastToken)
-      if let afterGroups = afterMap[lastToken] {
-        for after in afterGroups.reversed() {
-          tokens += after
-        }
-      }
+      appendAfterTokensAndTrailingComments(lastToken)
     }
   }
 
@@ -624,12 +621,10 @@ private final class TokenStreamCreator: SyntaxVisitor {
   func visit(_ node: FunctionCallArgumentSyntax) -> SyntaxVisitorContinueKind {
     before(node.firstToken, tokens: .open)
 
-    // If we have a closure following the colon, use a space instead of a continuation break so
-    // that we don't awkwardly shift the opening brace down and indent it further if it wraps.
-    // TODO: Instead of basing this on closure expressions, we should probably look at the first
-    // token of the expression and do this if it's any opening delimiter (brace, bracket, or
-    // paren) so that dictionary/array literals also get the same treatment.
-    let tokenAfterColon: Token = node.expression is ClosureExprSyntax ? .space : .break
+    // If we have an open delimiter following the colon, use a space instead of a continuation
+    // break so that we don't awkwardly shift the delimiter down and indent it further if it
+    // wraps.
+    let tokenAfterColon: Token = startsWithOpenDelimiter(node.expression) ? .space : .break
     after(node.colon, tokens: tokenAfterColon)
 
     if let trailingComma = node.trailingComma {
@@ -763,9 +758,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   func visit(_ node: ReturnClauseSyntax) -> SyntaxVisitorContinueKind {
-    before(node.firstToken, tokens: .open)
-    before(node.returnType.firstToken, tokens: .break(.open))
-    after(node.lastToken, tokens: .break(.close, size: 0), .close)
+    after(node.arrow, tokens: .space)
     return .visitChildren
   }
 
@@ -877,10 +870,8 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   func visit(_ node: TupleTypeSyntax) -> SyntaxVisitorContinueKind {
-    before(node.leftParen, tokens: .open)
     after(node.leftParen, tokens: .break(.open, size: 0), .open)
     before(node.rightParen, tokens: .break(.close, size: 0), .close)
-    after(node.rightParen, tokens: .close)
     return .visitChildren
   }
 
@@ -1159,7 +1150,8 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   func visit(_ node: TypeAnnotationSyntax) -> SyntaxVisitorContinueKind {
-    after(node.colon, tokens: .break)
+    after(node.colon, tokens: .break, .open)
+    after(node.lastToken, tokens: .close)
     return .visitChildren
   }
 
@@ -1413,9 +1405,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
   func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
     extractLeadingTrivia(token)
-    if let before = beforeMap[token] {
-      before.forEach(appendToken)
-    }
+    appendBeforeTokens(token)
 
     let text: String
     if token.leadingTrivia.hasBackticks && token.trailingTrivia.hasBackticks {
@@ -1425,15 +1415,64 @@ private final class TokenStreamCreator: SyntaxVisitor {
     }
     appendToken(.syntax(text))
 
-    extractTrailingComment(token)
-    if let afterGroups = afterMap[token] {
-      for after in afterGroups.reversed() {
-        after.forEach(appendToken)
-      }
-    }
+    appendAfterTokensAndTrailingComments(token)
 
     // It doesn't matter what we return here, tokens do not have children.
     return .skipChildren
+  }
+
+  /// Appends the before-tokens of the given syntax token to the token stream.
+  private func appendBeforeTokens(_ token: TokenSyntax) {
+    if let before = beforeMap[token] {
+      before.forEach(appendToken)
+    }
+  }
+
+  /// Appends the after-tokens and trailing comments (if present) of the given syntax token
+  /// to the token stream.
+  ///
+  /// After-tokens require special care because the location of trailing comments (being in the
+  /// trivia of the *next* token) sometimes can interfere with the ordering of formatting tokens
+  /// being enqueued during visitation. Specifically:
+  ///
+  /// * If the trailing comment is a block comment, we append it first to the stream before any
+  ///   other formatting tokens. This keeps the comment closely bound to the syntax token
+  ///   preceding it; for example, if the comment occurs after the last token in a group, it
+  ///   will stay inside the group.
+  ///
+  /// * If the trailing comment is a line comment, we first append any enqueued after-tokens
+  ///   that are *not* breaks or newlines, then we append the comment, and then the remaining
+  ///   after-tokens. Due to visitation ordering, this ensures that a trailing line comment is
+  ///   not incorrectly inserted into the token stream *after* a break or newline.
+  private func appendAfterTokensAndTrailingComments(_ token: TokenSyntax) {
+    let (wasLineComment, trailingCommentTokens) = afterTokensForTrailingComment(token)
+    let afterGroups = afterMap[token] ?? []
+    var hasAppendedTrailingComment = false
+
+    if !wasLineComment {
+      trailingCommentTokens.forEach(appendToken)
+    }
+
+    for after in afterGroups.reversed() {
+      after.forEach { afterToken in
+        var shouldExtractTrailingComment = false
+        if wasLineComment && !hasAppendedTrailingComment {
+          switch afterToken {
+          case .break, .newlines: shouldExtractTrailingComment = true
+          default: break
+          }
+        }
+        if shouldExtractTrailingComment {
+          trailingCommentTokens.forEach(appendToken)
+          hasAppendedTrailingComment = true
+        }
+        appendToken(afterToken)
+      }
+    }
+
+    if wasLineComment && !hasAppendedTrailingComment {
+      trailingCommentTokens.forEach(appendToken)
+    }
   }
 
   // MARK: - Various other helper methods
@@ -1636,29 +1675,47 @@ private final class TokenStreamCreator: SyntaxVisitor {
     return config.lineBreakBeforeEachArgument ? .consistent : .inconsistent
   }
 
-  private func extractTrailingComment(_ token: TokenSyntax) {
+  private func afterTokensForTrailingComment(_ token: TokenSyntax)
+    -> (isLineComment: Bool, tokens: [Token])
+  {
     let nextToken = token.nextToken
     guard let trivia = nextToken?.leadingTrivia,
           let firstPiece = trivia[safe: 0] else {
-      return
+      return (false, [])
     }
 
     let position = token.endPosition
+
     switch firstPiece {
     case .lineComment(let text):
-      appendToken(.space(size: 2))
-      appendToken(
-        .comment(Comment(kind: .line, text: text, position: position), wasEndOfLine: true))
-      appendToken(.newline)
+      var tokens: [Token] = [
+        .space(size: 2, flexible: true),
+        .comment(Comment(kind: .line, text: text, position: position), wasEndOfLine: true),
+      ]
+      // If the configuration says to respect existing line breaks, then we'll already be
+      // appending one elsewhere because there *must* be a line break present in the source
+      // for this to be a trailing line comment. Otherwise, we'll need to append one
+      // ourselves to ensure that it's present.
+      if !config.respectsExistingLineBreaks {
+        tokens.append(.newline)
+      }
+      return (true, tokens)
+
     case .blockComment(let text):
-      appendToken(.space(size: 1))
-      appendToken(
-        .comment(Comment(kind: .block, text: text, position: position), wasEndOfLine: false))
-      // We place a size-0 break after the comment to allow a discretionary newline after the
-      // comment if the user places one here but the comment is otherwise adjacent to a text token.
-      appendToken(.break(.same, size: 0))
+      return (
+        false,
+        [
+          .space(size: 1, flexible: true),
+          .comment(Comment(kind: .block, text: text, position: position), wasEndOfLine: false),
+          // We place a size-0 break after the comment to allow a discretionary newline after
+          // the comment if the user places one here but the comment is otherwise adjacent to a
+          // text token.
+          .break(.same, size: 0),
+        ]
+      )
+
     default:
-      return
+      return (false, [])
     }
   }
 
@@ -1681,6 +1738,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
       }
     }
 
+    var lastPieceWasLineComment = false
     for (index, piece) in trivia.enumerated() {
       if let cutoff = cutoffIndex, index == cutoff { break }
       switch piece {
@@ -1690,6 +1748,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
           appendToken(.newline)
           isStartOfFile = false
         }
+        lastPieceWasLineComment = true
 
       case .blockComment(let text):
         if index > 0 || isStartOfFile {
@@ -1700,20 +1759,25 @@ private final class TokenStreamCreator: SyntaxVisitor {
           appendToken(.break(.same, size: 0))
           isStartOfFile = false
         }
+        lastPieceWasLineComment = false
 
       case .docLineComment(let text):
         appendToken(.comment(Comment(kind: .docLine, text: text), wasEndOfLine: false))
         appendToken(.newline)
         isStartOfFile = false
+        lastPieceWasLineComment = true
 
       case .docBlockComment(let text):
         appendToken(.comment(Comment(kind: .docBlock, text: text), wasEndOfLine: false))
         appendToken(.newline)
         isStartOfFile = false
+        lastPieceWasLineComment = false
 
       case .newlines(let count), .carriageReturns(let count), .carriageReturnLineFeeds(let count):
         guard !isStartOfFile else { break }
-        if config.respectsExistingLineBreaks && isDiscretionaryNewlineAllowed(before: token) {
+        if config.respectsExistingLineBreaks
+          && (lastPieceWasLineComment || isDiscretionaryNewlineAllowed(before: token))
+        {
           appendToken(.newlines(count, discretionary: true))
         }
         else {
@@ -1777,7 +1841,11 @@ private final class TokenStreamCreator: SyntaxVisitor {
     return isBreakMoreRecentThanNonbreakingContent(tokens) ?? true
   }
 
-  func appendToken(_ token: Token) {
+  /// Appends a formatting token to the token stream.
+  ///
+  /// This function also handles collapsing neighboring tokens in situations where that is
+  /// desired, like merging adjacent comments and newlines.
+  private func appendToken(_ token: Token) {
     if let last = tokens.last {
       switch (last, token) {
       case (.comment(let c1, _), .comment(let c2, _))
@@ -1794,13 +1862,13 @@ private final class TokenStreamCreator: SyntaxVisitor {
         tokens[tokens.count - 1] = .newlines(count, discretionary: true)
         return
 
-      // If we see two neighboring pairs of required newlines, combine them into a new token with
-      // the sum of their counts.
+      // If we see a pair of required newlines, combine them into a new token with the sum of
+      // their counts.
       case (.newlines(let first, discretionary: true), .newlines(let second, discretionary: true)):
         tokens[tokens.count - 1] = .newlines(first + second, discretionary: true)
         return
 
-      // If we see two neighboring pairs of non-required newlines, keep only the larger one.
+      // If we see a pair of non-required newlines, keep only the larger one.
       case (
         .newlines(let first, discretionary: false),
         .newlines(let second, discretionary: false)
@@ -1808,11 +1876,28 @@ private final class TokenStreamCreator: SyntaxVisitor {
         tokens[tokens.count - 1] = .newlines(max(first, second), discretionary: true)
         return
 
+      // If we see a pair of spaces where one or both are flexible, combine them into a new token
+      // with the maximum of their counts.
+      case (.space(let first, let firstFlexible), .space(let second, let secondFlexible))
+      where firstFlexible || secondFlexible:
+        tokens[tokens.count - 1] = .space(size: max(first, second), flexible: true)
+        return
+
       default:
         break
       }
     }
     tokens.append(token)
+  }
+
+  /// Returns true if the first token of the given node is an open delimiter that may desire
+  /// special breaking behavior in some cases.
+  private func startsWithOpenDelimiter(_ node: Syntax) -> Bool {
+    guard let token = node.firstToken else { return false }
+    switch token.tokenKind {
+    case .leftBrace, .leftParen, .leftSquareBracket: return true
+    default: return false
+    }
   }
 }
 

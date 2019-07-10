@@ -132,4 +132,37 @@ public class FunctionCallTests: PrettyPrintTestCase {
     config.lineBreakBeforeEachArgument = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
   }
+
+  public func testArgumentStartsWithOpenDelimiter() {
+    let input =
+      """
+      myFunc(someArray: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000])
+      myFunc(someDictionary: ["foo": "bar", "baz": "quux", "glip": "glop"])
+      myFunc(someClosure: { foo, bar in baz(1000, 2000, 3000, 4000, 5000) })
+      """
+
+    let expected =
+      """
+      myFunc(
+        someArray: [
+          1000, 2000, 3000, 4000, 5000, 6000, 7000,
+          8000
+        ]
+      )
+      myFunc(
+        someDictionary: [
+          "foo": "bar", "baz": "quux",
+          "glip": "glop"
+        ]
+      )
+      myFunc(
+        someClosure: { foo, bar in
+          baz(1000, 2000, 3000, 4000, 5000)
+        }
+      )
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
+  }
 }
