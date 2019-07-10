@@ -186,6 +186,7 @@ extension FunctionCallTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__FunctionCallTests = [
+        ("testArgumentStartsWithOpenDelimiter", testArgumentStartsWithOpenDelimiter),
         ("testBasicFunctionCalls_noPackArguments", testBasicFunctionCalls_noPackArguments),
         ("testBasicFunctionCalls_packArguments", testBasicFunctionCalls_packArguments),
         ("testDiscretionaryLineBreakBeforeClosingParenthesis", testDiscretionaryLineBreakBeforeClosingParenthesis),
@@ -292,6 +293,7 @@ extension MemberAccessExprTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__MemberAccessExprTests = [
+        ("testImplicitMemberAccess", testImplicitMemberAccess),
         ("testMemberAccess", testMemberAccess),
     ]
 }
