@@ -265,7 +265,10 @@ public class PrettyPrinter {
           //
           // Note that in this case, the transformation of the current line into a continuation line
           // must happen unconditionally, not only if the break fires.
-          currentLineIsContinuation = isDifferentLine
+          //
+          // Likewise, we need to do this if we popped an old continuation state off the stack,
+          // even if the break *doesn't* fire.
+          currentLineIsContinuation = isContinuationIfBreakFires || isDifferentLine
         }
       case .continue:
         isContinuationIfBreakFires = true

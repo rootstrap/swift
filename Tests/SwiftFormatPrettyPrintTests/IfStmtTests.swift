@@ -189,12 +189,23 @@ public class IfStmtTests: PrettyPrintTestCase {
       if let SomeReallyLongVar = Some.More.Stuff(), let a = myfunc() {
         // do stuff
       }
+
+      if someCondition
+        && someFunctionCall(arguments) {
+        // do stuff
+      }
       """
 
     let expected =
       """
       if let SomeReallyLongVar = Some.More
         .Stuff(), let a = myfunc()
+      {
+        // do stuff
+      }
+
+      if someCondition
+        && someFunctionCall(arguments)
       {
         // do stuff
       }
