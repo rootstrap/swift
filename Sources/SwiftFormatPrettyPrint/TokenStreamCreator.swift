@@ -392,8 +392,8 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
-    after(node.guardKeyword, tokens: .break(.open))
-    before(node.elseKeyword, tokens: .break(.close, size: 0), .break(.reset), .open)
+    after(node.guardKeyword, tokens: .break)
+    before(node.elseKeyword, tokens: .break(.reset), .open)
     after(node.elseKeyword, tokens: .break)
     before(node.body.leftBrace, tokens: .close)
 
@@ -606,9 +606,6 @@ private final class TokenStreamCreator: SyntaxVisitor {
   func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     var argumentIterator = node.argumentList.makeIterator()
     let firstArgument = argumentIterator.next()
-    if firstArgument?.expression is ClosureExprSyntax {
-      return .visitChildren
-    }
 
     if firstArgument != nil {
       // If there is a trailing closure, force the right parenthesis down to the next line so it
@@ -626,7 +623,15 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
   func visit(_ node: FunctionCallArgumentSyntax) -> SyntaxVisitorContinueKind {
     before(node.firstToken, tokens: .open)
-    after(node.colon, tokens: .break)
+
+    // If we have a closure following the colon, use a space instead of a continuation break so
+    // that we don't awkwardly shift the opening brace down and indent it further if it wraps.
+    // TODO: Instead of basing this on closure expressions, we should probably look at the first
+    // token of the expression and do this if it's any opening delimiter (brace, bracket, or
+    // paren) so that dictionary/array literals also get the same treatment.
+    let tokenAfterColon: Token = node.expression is ClosureExprSyntax ? .space : .break
+    after(node.colon, tokens: tokenAfterColon)
+
     if let trailingComma = node.trailingComma {
       after(trailingComma, tokens: .close, .break(.same))
     } else {
@@ -977,7 +982,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
   func visit(_ node: ConditionElementSyntax) -> SyntaxVisitorContinueKind {
     before(node.firstToken, tokens: .open)
     if let comma = node.trailingComma {
-      after(comma, tokens: .close, .break(.same))
+      after(comma, tokens: .close, .break)
     }
     else {
       after(node.lastToken, tokens: .close)
@@ -1001,11 +1006,11 @@ private final class TokenStreamCreator: SyntaxVisitor {
   }
 
   func visit(_ node: TernaryExprSyntax) -> SyntaxVisitorContinueKind {
-    before(node.questionMark, tokens: .break(.open), .open)
+    before(node.questionMark, tokens: .break, .open)
     after(node.questionMark, tokens: .space)
-    before(node.colonMark, tokens: .break(.same))
+    before(node.colonMark, tokens: .break)
     after(node.colonMark, tokens: .space)
-    after(node.secondChoice.lastToken, tokens: .break(.close, size: 0), .close)
+    after(node.secondChoice.lastToken, tokens: .close)
     return .visitChildren
   }
 

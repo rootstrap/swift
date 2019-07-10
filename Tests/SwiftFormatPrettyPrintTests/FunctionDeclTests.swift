@@ -91,6 +91,7 @@ public class FunctionDeclTests: PrettyPrintTestCase {
   }
 
   public func testFunctionDeclReturns() {
+    // TODO: The tuple return case needs a lot of work.
     let input =
       """
       func myFun(var1: Int, var2: Double) -> Double {
@@ -120,10 +121,10 @@ public class FunctionDeclTests: PrettyPrintTestCase {
       }
       func tupleFunc() throws
         ->
-        (
-          one: Int, two: Double, three: Bool,
-          four: String
-        )
+          (
+            one: Int, two: Double, three: Bool,
+            four: String
+          )
       {
         return (
           one: 1, two: 2.0, three: true, four: "four"

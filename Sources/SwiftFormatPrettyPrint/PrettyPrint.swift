@@ -201,20 +201,39 @@ public class PrettyPrinter {
     case .break(let kind, let size, _):
       lastBreakKind = kind
       var mustBreak = forceBreakStack.last ?? false
-      var isContinuation = false
+
+      // Tracks whether the current line should be considered a continuation line, *if and only if
+      // the break fires* (note that this is assigned to `currentLineIsContinuation` only in that
+      // case).
+      var isContinuationIfBreakFires = false
 
       switch kind {
       case .open:
         continuationStack.append(currentLineIsContinuation)
-        currentLineIsContinuation = false
+        isContinuationIfBreakFires = false
         openDelimiterBreakStack.append(lineNumber)
+
+        // If an open break occurs on a continuation line, we must push that continuation
+        // indentation onto the stack. The open break will reset the continuation state for the
+        // lines within it (unless they are themselves continuations within that particular scope),
+        // so we need the continuation indentation to persist across all the lines in that scope.
+        if currentLineIsContinuation {
+          indentationStack.append(configuration.indentation)
+        }
+
         indentationStack.append(configuration.indentation)
       case .close(let closeMustBreak):
         guard let matchingOpenLineNumber = openDelimiterBreakStack.popLast() else {
           fatalError("Unmatched closing break")
         }
+
         indentationStack.removeLast()
-        currentLineIsContinuation = continuationStack.popLast() ?? false
+        isContinuationIfBreakFires = continuationStack.popLast() ?? false
+
+        // Un-persist any continuation indentation that may have applied to the open/close scope.
+        if isContinuationIfBreakFires {
+          indentationStack.removeLast()
+        }
 
         let isDifferentLine = lineNumber != matchingOpenLineNumber
         if closeMustBreak {
@@ -243,10 +262,13 @@ public class PrettyPrinter {
           // on the same line as the curly brace, but that requires quite a bit more contextual
           // information than is easily available. The user can, however, do so with discretionary
           // breaks (if they are enabled).
+          //
+          // Note that in this case, the transformation of the current line into a continuation line
+          // must happen unconditionally, not only if the break fires.
           currentLineIsContinuation = isDifferentLine
         }
       case .continue:
-        isContinuation = true
+        isContinuationIfBreakFires = true
       case .same:
         break
       case .reset:
@@ -254,7 +276,7 @@ public class PrettyPrinter {
       }
 
       if length > spaceRemaining || mustBreak {
-        currentLineIsContinuation = isContinuation
+        currentLineIsContinuation = isContinuationIfBreakFires
         writeNewlines(1, discretionary: false)
         lastBreak = true
       } else {
@@ -264,7 +286,7 @@ public class PrettyPrinter {
           // might be inserted into the token stream before a continuation break, and the length of
           // that break might not be enough to satisfy the conditions above but we still need to
           // treat the line as a continuation.
-          currentLineIsContinuation = isContinuation
+          currentLineIsContinuation = isContinuationIfBreakFires
         }
         enqueueSpaces(size)
         lastBreak = false
