@@ -20,4 +20,23 @@ public class MemberAccessExprTests: PrettyPrintTestCase {
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 15)
   }
+
+  public func testImplicitMemberAccess() {
+    let input =
+      """
+      let array = [.first, .second, .third]
+      """
+
+    let expected =
+      """
+      let array = [
+        .first,
+        .second,
+        .third
+      ]
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 15)
+  }
 }

@@ -109,7 +109,7 @@ enum Token {
   case open(GroupBreakStyle)
   case close
   case `break`(BreakKind, size: Int, ignoresDiscretionary: Bool)
-  case space(size: Int)
+  case space(size: Int, flexible: Bool)
   case newlines(Int, discretionary: Bool)
   case comment(Comment, wasEndOfLine: Bool)
   case verbatim(Verbatim)
@@ -124,7 +124,10 @@ enum Token {
     return Token.newlines(1, discretionary: discretionary)
   }
 
-  static let space = Token.space(size: 1)
+  static let space = Token.space(size: 1, flexible: false)
+  static func space(size: Int) -> Token {
+    return .space(size: size, flexible: false)
+  }
 
   static let `break` = Token.break(.continue, size: 1, ignoresDiscretionary: false)
   static func `break`(_ kind: BreakKind, size: Int = 1) -> Token {
