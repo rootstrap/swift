@@ -985,13 +985,13 @@ places **only**:
    1. Shorthand dictionary type names.
 
       ~~~ swift
-      var nameAgeMap: [String: Int] = []
+      var nameAgeMap: [String: Int] = [:]
       ~~~
       {:.good}
 
       ~~~ swift
-      var nameAgeMap: [String:Int] = []
-      var nameAgeMap: [String : Int] = []
+      var nameAgeMap: [String:Int] = [:]
+      var nameAgeMap: [String : Int] = [:]
       ~~~
       {:.bad}
 
