@@ -1,9 +1,8 @@
-# Google Swift Style Guide
+# Roostrap Swift Style Guide
 
 This is the source for the
-[Google Swift Style Guide](https://google.github.io/swift) website, which is
-based on the [Swift.org](https://swift.org) documentation (found at
-https://github.com/apple/swift-internals).
+[Rootstrap Swift Style Guide](https://rootstrap.github.io/swift) website, which is
+based on the [Google](https://google.github.io/swift) style-guide.
 
 ## Local Testing and Development
 
@@ -21,6 +20,6 @@ Notes:
   above).
 * If you make changes to `_config.yml` specifically in order to serve
   these pages from an address other than
-  http://google.github.io/swift-style, please make sure those
+  http://rootstrap.github.io/swift-style, please make sure those
   changes are not included in any pull requests, so we don't
   inadvertently break the main site.
